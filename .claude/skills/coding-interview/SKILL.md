@@ -147,16 +147,17 @@ implementer gets `good-code` for the brute and optimized solutions, `good-test` 
 harness. Same file, both sides: the creator holds the reviewer's rubric.
 
 1. **Sample cases** - plan proposes a handful of hardcoded `input -> expected output` pairs, each
-   expected value worked out by hand. Once the gate clears, they lock as the test fixtures.
+   expected value worked out by hand. Once the gate clears, they lock as the test fixtures, in the
+   working **test** file.
 2. **Brute force** - plan is the one-line obviously-correct approach (sort-then-index, nested loop).
    Once implemented and verified it becomes the **oracle** for the cross-check. It is never presented as
-   the solution; its whole job is to be trustworthy.
+   the solution; its whole job is to be trustworthy. Lands in the working **source** file.
 3. **Optimized solution** - plan is the approach and the "what are we optimizing" call (time vs space;
    for a selection problem the k-vs-n choice among heap, quickselect, sort). **This is the critical
-   path.** Lead with it.
+   path.** Lead with it. Lands in the working **source** file, alongside the brute reference.
 4. **Cross-check harness** - plan is the random-input generator design (varied sizes, empty, one
    element, duplicates, negatives, full k range). It depends only on the function signature, so it
-   proceeds alongside the optimized work.
+   proceeds alongside the optimized work. Lands in the working **test** file.
 
 ### The review gate (runs on every lane)
 
@@ -177,6 +178,22 @@ has arrived, in his own words, in this conversation. The moment a plan is surfac
 your turn there and wait; the next thing that happens on that lane is his reply. Before reporting a set of
 plans as approved, confirm each one actually carries Russell's own word for it - that check is the
 standing precondition for implementation, same as any other gate in this loop.
+
+### Code review happens through git, never the console
+
+At the start of a rep, create a local scratch branch off `main` for the rep's working files (e.g.
+`rep/<slug>`) - never pushed, never merged; it exists only so this rep's code has somewhere to live and
+diff against. Copy `templates/problem.js` and `templates/problem.test.js` to a matched pair of working
+files on that branch (e.g. `rep.js` and `rep.test.js`), point the test file's `require` at the source
+file, and fill both in there. Source (`bruteSolve`, `solve`) and test infrastructure (fixtures,
+`equivalent`, `randomInput`, the harness) stay in their own files - never merged into one.
+
+Whenever an implementation - brute, optimized, harness, or the locked fixtures - is ready for Russell to
+look at, write it to its file (source changes in `rep.js`, test changes in `rep.test.js`) and `git add`
+it; say only that it's staged and ready, and never paste code into the console. Russell reviews with
+`git diff --staged`. His approval is what turns the staged state into a commit - `git commit` is the
+record of his sign-off, made right after he gives it, not something that happens on its own. A revision
+after feedback goes back to `git add`, staged again, for another `git diff --staged` look.
 
 ### Verification chain (the load-bearing part)
 
@@ -256,13 +273,15 @@ the verdict. Profile each reviewer's time during practice and cut any that costs
 
 ## Files
 
-- `templates/problem.test.js` - the per-problem template. Copy it to a working file and fill the four
-  slots: `bruteSolve`, `solve`, the fixtures, and `randomInput`. It already holds the seeded random
-  cross-check that asserts `solve === bruteSolve`, and an `equivalent(input, a, b)` seam for problems
-  whose answer is not unique.
-- `examples/top-k-frequent.test.js` - one fully worked instance (Top K Frequent Elements), runnable with
-  `node --test`. It shows the tie-aware `equivalent` that compares the frequency profile rather than the
-  raw elements, so two equally-correct selections are not flagged as a mismatch.
+- `templates/problem.js` + `templates/problem.test.js` - the per-problem template, split source from
+  test. Copy both to a matched working pair and fill the four slots: `bruteSolve` and `solve` in the
+  `.js` file, the fixtures and `randomInput` in the `.test.js` file. The test file already holds the
+  seeded random cross-check that asserts `solve === bruteSolve`, and an `equivalent(input, a, b)` seam
+  for problems whose answer is not unique.
+- `examples/top-k-frequent.js` + `examples/top-k-frequent.test.js` - one fully worked instance (Top K
+  Frequent Elements), runnable with `node --test examples/top-k-frequent.test.js`. The test file shows
+  the tie-aware `equivalent` that compares the frequency profile rather than the raw elements, so two
+  equally-correct selections are not flagged as a mismatch.
 - `rubrics/good-pseudocode.md`, `rubrics/good-test.md`, `rubrics/good-code.md` - the reviewer rubrics.
 
 ## Profile mode vs real mode
