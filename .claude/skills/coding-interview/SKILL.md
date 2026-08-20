@@ -23,17 +23,16 @@ The subagents do the drafting and reviewing in the background while the main tab
 never idle while you are heads-down, and you are never blocked waiting on him: his review of one
 artifact overlaps your building of the next.
 
-**Keep-fed priority - always hand Russell the next thing to look at in this order:**
+**One thing to review at a time.** Work keeps happening in the background no matter what Russell is doing
+- lanes keep drafting, reviewer agents keep running - but none of it surfaces on screen. Show him exactly
+one artifact, ask him to review it, then print nothing else until he resolves it (approves it, or you've
+applied his feedback and re-shown the revision for another look). Only once that item is resolved do you
+show the next thing - never a second item competing for his attention, never a queued-artifact notice
+landing mid-review. If something else clears its reviewer agent while he's still on the current item, it
+waits silently; when he's free, hand him the next thing in this order:
 1. Something that has already **passed its reviewer agent** - a pre-vetted artifact.
 2. If nothing has cleared a reviewer yet, **anything that has been built** - better than letting him sit.
-When he gives feedback, dispatch it at once and surface the next queued item in the same breath.
-
-**Stay quiet while he's reviewing.** Dispatching feedback and launching the next lane happen silently -
-no running narration of subagent status in between. The only things that print are: handing over an
-artifact to review, and responding to his feedback on one. Never let a status update land between his
-feedback and the artifact it was about, or between two things he hasn't reacted to yet - the most recent
-line on screen must always be the thing he's currently looking at, never background noise from a lane he
-isn't reviewing. Label what you hand him (which lane, which revision) so it's unambiguous.
+Label what you hand him (which lane, which revision) so it's unambiguous.
 
 ## The shape
 

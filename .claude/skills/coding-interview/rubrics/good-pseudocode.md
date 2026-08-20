@@ -26,17 +26,12 @@ Each rule added here carries a **Check** naming the surface forms that usually m
 checker applies the Check as evidence, not as the rule itself: a listed form is not automatically a
 violation, and a real violation using none of the listed forms is still a violation.
 
-1. **Preserve the input.** The plan does not mutate the input in place unless the problem's contract
-   requires the result to land in that same structure (e.g. Merge Sorted Array's in-place merge into
-   `nums1`). Default to reading, never writing, the input.
-   **Check:** the plan sorts, splices, or reassigns into the input array/object/list with no copy step
-   named, and the problem statement never asked for an in-place result.
-2. **Name the boundary handling.** The optimized plan states what happens on invalid or edge input -
+1. **Name the boundary handling.** The optimized plan states what happens on invalid or edge input -
    `k` outside `[1, n]`, an empty collection, `k = 0` - not just the happy path. This is part of the
    approach, not deferred to implementation.
    **Check:** the plan has no line addressing `k`'s bounds (for a selection problem) or the
    empty/single-element case, despite the clarify step having raised it.
-3. **Lead with the mental model.** Before the steps, a few sentences (or a short paragraph) state the
+2. **Lead with the mental model.** Before the steps, a few sentences (or a short paragraph) state the
    intuition that makes the approach work - the invariant it maintains, or the insight that rules out the
    naive approach. Steps alone are not a plan; they are the mechanics of an idea the reader hasn't been
    given yet.

@@ -30,7 +30,8 @@ violation, and a real violation using none of the listed forms is still a violat
    the problem's contract requires the result in that same structure. Copy before sorting or modifying.
    **Check:** an in-place `.sort()`/`.splice()`/`.reverse()` on a parameter, or a reassignment into a
    passed-in object/array, with no corresponding requirement in the problem statement.
-2. **Validate the boundaries the plan named.** If the approved plan calls out `k` bounds, empty input, or
-   another edge case, the code actually handles it - not just the happy path the examples show.
-   **Check:** the plan names a boundary (e.g. `k` outside `[1, n]`) but the code has no corresponding
-   check or branch, so that input would silently misbehave rather than being handled as planned.
+2. **Validate the boundaries.** The code checks the standing set regardless of whether the plan spelled
+   each one out: too high, too low, `null`/`undefined`, and missing/wrong-type arguments - not just the
+   happy path the examples show.
+   **Check:** no range check in either direction on a bounded parameter (e.g. `k` outside `[1, n]`), no
+   `null`/`undefined` guard, or no handling for a required argument being absent.
