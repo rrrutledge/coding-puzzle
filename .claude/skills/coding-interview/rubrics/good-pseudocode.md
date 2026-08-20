@@ -10,6 +10,15 @@ decision the plan left open, commits to the time and space it is aiming for, and
 k-vs-n call). Judge each plan against that purpose, and against the specific rules below as they
 accumulate.
 
+**Judge a plan only against its own lane's job - never for lacking what a different lane owns.** The four
+lanes split the work, and the plan in front of you covers exactly one slice: the sample-cases plan owns the
+hand-derived fixture table; the brute plan owns the obviously-correct one-liner; the cross-check harness
+plan owns the random `inputArbitrary` design and the property it asserts; the optimized plan owns the
+approach and its tradeoff. So a harness plan is complete with no fixtures in it - fixtures are the
+sample-cases lane - and a brute plan is complete with no optimized-vs-brute tradeoff. Pass the plan when
+its own lane's responsibility is met, whatever a different lane is separately handling; flagging it for a
+neighbor lane's content is the out-of-lane miss this guards against.
+
 The creator (the lane subagent) writes toward this rubric and holds this same file, so most plans pass
 the first read. The reviewer agent reads the plan cold against this file and returns one verdict.
 
