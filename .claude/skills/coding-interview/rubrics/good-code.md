@@ -49,3 +49,8 @@ is that evidence being absent, not the presence of some named bad pattern.
    makes it optimal.
    **Check:** each functional array-method call stands on its own rather than feeding directly into
    another `.map()`/`.filter()`/`.reduce()`, and the core optimized step is written as an explicit loop.
+5. **Functions live at the same level.** Every function - including small helpers - is its own top-level
+   declaration, not nested inside another function's body. A helper that needs data from its caller takes
+   it as a parameter instead of closing over it.
+   **Check:** every `function`, arrow, or method lives at module scope; none is declared inside another
+   function's body.

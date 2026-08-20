@@ -21,17 +21,24 @@ const { topKFrequent, bruteTopK } = require('./top-k-frequent');
 function equivalent([nums, k], a, b) {
   const counts = new Map();
   for (const n of nums) {counts.set(n, (counts.get(n) ?? 0) + 1);}
-  const profile = (sel) =>
-    sel
-      .map((v) => counts.get(v))
-      .sort((x, y) => x - y)
-      .join(',');
-  // Guard the fixture case too: a selection is only valid if it has no duplicates
-  // and its length is min(k, distinct).
-  const wellFormed = (sel) =>
-    new Set(sel).size === sel.length &&
-    sel.length === Math.min(k, counts.size);
-  return wellFormed(a) && wellFormed(b) && profile(a) === profile(b);
+  return (
+    isWellFormed(a, k, counts) &&
+    isWellFormed(b, k, counts) &&
+    frequencyProfile(a, counts) === frequencyProfile(b, counts)
+  );
+}
+
+// A selection is well-formed if it has no duplicates and picks min(k, distinct) elements.
+function isWellFormed(sel, k, counts) {
+  return new Set(sel).size === sel.length && sel.length === Math.min(k, counts.size);
+}
+
+// The sorted list of frequencies a selection picks - an order-independent fingerprint.
+function frequencyProfile(sel, counts) {
+  return sel
+    .map((v) => counts.get(v))
+    .sort((x, y) => x - y)
+    .join(',');
 }
 
 // ── Hardcoded fixtures: derived by hand from the statement ────────────────────
