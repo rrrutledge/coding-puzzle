@@ -22,9 +22,10 @@ Earned from real reps, not guessed in advance. When a practice rep surfaces feed
 how the code should be written (not specific to one problem), the rubric-learning step folds it in here as
 a new rule.
 
-Each rule added here carries a **Check** naming the surface forms that usually mean it was broken. A
-checker applies the Check as evidence, not as the rule itself: a listed form is not automatically a
-violation, and a real violation using none of the listed forms is still a violation.
+Each rule added here carries a **Check** naming the surface form that shows the rule was followed - a
+checker looks for that form as evidence, not as the rule itself: finding it is a good sign but not
+automatic proof, and a rule can be satisfied through a form the Check doesn't name. What flags a violation
+is that evidence being absent, not the presence of some named bad pattern.
 
 1. **No input mutation.** The optimized (and brute) solution does not mutate its input parameters unless
    the problem's contract requires the result in that same structure. Copy before sorting or modifying.

@@ -22,9 +22,10 @@ Earned from real reps, not guessed in advance. When a practice rep surfaces feed
 how plans should be written (not specific to one problem), the rubric-learning step folds it in here as a
 new rule.
 
-Each rule added here carries a **Check** naming the surface forms that usually mean it was broken. A
-checker applies the Check as evidence, not as the rule itself: a listed form is not automatically a
-violation, and a real violation using none of the listed forms is still a violation.
+Each rule added here carries a **Check** naming the surface form that shows the rule was followed - a
+checker looks for that form as evidence, not as the rule itself: finding it is a good sign but not
+automatic proof, and a rule can be satisfied through a form the Check doesn't name. What flags a violation
+is that evidence being absent, not the presence of some named bad pattern.
 
 1. **Name the boundary handling.** The optimized plan states what happens on invalid or edge input -
    `k` outside `[1, n]`, an empty collection, `k = 0` - not just the happy path. This is part of the
