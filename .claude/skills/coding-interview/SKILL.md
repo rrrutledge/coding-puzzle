@@ -225,6 +225,26 @@ reviewer has passed and Russell has approved:
 - Reviewer agent finishes first -> the plan Russell is already reading is now also pre-vetted.
 - Russell gets there first -> he reviews before the agent lands, rather than sitting idle.
 
+**A plan-finished notification, with Russell free, is the cue to present that plan - not to do quiet
+bookkeeping.** After the four lanes dispatch, the orchestrator sits idle waiting on background agents, and
+each plan that lands arrives as a finish notification. When Russell is free, that notification's whole job
+is to make you hand him the plan and end the turn on it. Firing the plan's reviewer is a silent same-turn
+tool call that happens alongside the hand-off - the turn still ends by presenting the plan to Russell, not
+by launching the reviewer and slipping back into the wait with nothing shown. The failure this prevents is
+exactly the one that keeps recurring: a plan finishes, its reviewer launches, and the turn ends silent
+because the finish got treated as an internal event instead of the trigger to feed him. So when the first
+plan lands and he is free, do not return to waiting - present it and yield.
+
+**Present the plan's text, echoed from the lane agent's draft - a status line is not a hand-off.** A
+background subagent's output is returned to you, the orchestrator; it never prints into Russell's tab on
+its own, so he sees only what you yourself write. A lane agent or a reviewer "finishing" therefore puts
+nothing in front of him - you copy the plan's content, its mental model and steps, into your own message.
+A turn that ends with "ready for your review" or "waiting for your review" and no plan body above it has
+shown him nothing, with the actual plan still sitting only in the agent's return value - that bare status
+line is the failure to avoid. The reviewer finishing is itself an internal event, never the cue to
+surface: what Russell reviews is the plan's text, and it goes up the instant the plan drafts, whatever the
+reviewer is doing.
+
 Feedback from either side loops back to the **same lane subagent**, which revises with its full drafting
 context intact. An approved plan unlocks that lane's implementation. The implemented optimized code
 passes one more gate - `/code-review` plus the good-code agent - and it is the same race: the instant the
