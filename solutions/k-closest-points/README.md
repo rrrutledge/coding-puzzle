@@ -8,15 +8,6 @@ Input is an array of points, each `[x, y]`, and an integer `k`.
 Return the `k` points closest to the origin `(0, 0)` by Euclidean distance.
 The result may be in any order.
 
-## Clarifications
-
-- **Ties at the k-th distance** - every point tied at the boundary is included, so the answer can be longer than `k`.
-- **Output order** - any order is fine, which lets us stop at a partition instead of a full sort.
-- **Range of `k`** - one through the number of points; anything outside is rejected.
-- **Distance** - Euclidean, compared as squared distance so ties stay exact.
-
-Plus the two standing assumptions: the input is never mutated, and malformed input (wrong type, empty, out-of-range `k`) is rejected rather than trusted.
-
 ## Approach
 
 **Mental model.** We never need the points *sorted* by distance - only *partitioned* around the k-th smallest distance, because any order is an acceptable answer. Quickselect finds that k-th element in linear average time without paying for a full sort. The wrinkle is heavy ties: many points can share a distance, so a two-way partition would scatter the equal values. A three-way (Dutch-flag) partition instead groups everything equal to the pivot into one block, which is exactly what a "include all ties at the boundary" contract needs, and it keeps the all-duplicates case from degrading to quadratic.

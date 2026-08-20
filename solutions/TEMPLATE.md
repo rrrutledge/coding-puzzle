@@ -7,15 +7,6 @@
 State the problem as it was posed - the input, the output, and the rule that ties them.
 Keep it to what an interviewer would say out loud, not a re-derivation.
 
-## Clarifications
-
-The questions whose answer changes the algorithm, each with the short answer we settled on. Keep these to a line each.
-
-- **<question>** - <answer>.
-- **<question>** - <answer>.
-
-Plus the two standing assumptions, held on every problem: the input is never mutated, and malformed input is rejected rather than trusted.
-
 ## Approach
 
 Lead with the mental model - the intuition for *why* this works, the invariant it keeps, or the insight that rules out the naive approach - before any steps.
