@@ -88,6 +88,24 @@ running at full speed the whole time: yielding pauses only your output to him, n
 they finish while he reviews lands silently in the queue and is surfaced only after he takes his turn and
 frees up. The one thing that ends his turn is his own reply.
 
+**A background finish still wakes you mid-review - when it does, re-anchor the open ask; never leave the
+turn empty.** True silence is the intent, but a lane or reviewer finishing wakes you into a turn the tab
+renders whether or not you have anything to add, and a turn with no text of yours renders as a bare
+`(no output - waiting on your reply)` line. That line is not suppressible - the terminal prints it for any
+woken turn you leave empty - and it does real harm: it reads to Russell as "nothing for me," and each one
+pushes the actual thing awaiting his sign-off further up and out of view, so a real pending ask hides
+behind a stack of them. So a turn you take while an artifact is still open for him is never contentless:
+end it with a single line restating the one thing you need from him and where it is ("still need your call
+on the cross-check harness plan, above"). You are not adding a new artifact or a second review - the open
+ask is unchanged; you are only keeping it named at the tail of the scroll so he can always tell what is
+waiting on him. Skip the line only when the open ask is already the last thing printed and nothing has
+rendered since - re-anchor precisely when a wake would otherwise bury it.
+
+The deeper lever is to make those wakes rare: a swarm of background verifiers finishing one by one during
+his review is what generates the stack of empty turns, so keep the fan-out you leave running under him
+lean - batch a lane's own verification rather than spawning a separate agent per finding whose completion
+pings back mid-review.
+
 **When his reply lands, lead with the next artifact - route his feedback after it.** His reply is the
 trigger to feed him the next thing, and he is already waiting on it, so the next ready artifact (chosen
 by the order above) is the first thing the response emits: its label and its content, right at the top,
