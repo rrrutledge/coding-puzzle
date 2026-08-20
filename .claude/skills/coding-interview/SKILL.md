@@ -54,6 +54,17 @@ When he is free and more than one artifact is already waiting, pick in this orde
    reviewer when something built is sitting there.
 Everything else waits silently in the queue, and its turn comes when he frees up.
 
+**Handing him an artifact means putting its content in front of him, in the same message that yields.**
+Yielding to Russell and the thing he is to review arrive together, never one without the other. A plan is
+handed over by showing its text - the mental model and the steps - right here in the tab, so he reads and
+reacts to it without asking for it. Code is handed over by staging it and pointing him at
+`git diff --staged` (the staged diff is the thing in front of him; never paste code into the console).
+Naming that a plan or a set of test cases is "queued" or "available to look at" without showing it is not
+handing it over - it leaves him to go fetch what should already be on the page. And hand over one item -
+the single one chosen by the order above - not a menu of two or three "look at whichever you want"; the
+one-at-a-time rule means you pick the next artifact for him and present it, and the rest stay silent until
+their turn.
+
 ## The shape
 
 Clarify first, then four lanes fan out, each gated, then a single verification chain, then document and
