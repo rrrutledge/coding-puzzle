@@ -63,3 +63,10 @@ is that evidence being absent, not the presence of some named bad pattern.
    flag) in a variable and let the loop or function finish naturally instead.
    **Check:** the function's only `return` is its final statement, no loop body contains a `break`, and a
    loop that stops early for a non-index reason has that reason folded into its own test expression.
+7. **No repeated code or repeated concepts.** The same logic or check, needed more than once, becomes one
+   named helper used from every call site - not restated with slightly different wording each time.
+   Exception: the brute reference and the optimized solution stay independently implemented even where
+   that means some structural overlap (both computing a frequency count from scratch, say) - sharing that
+   logic between them would let one bug fool both, defeating the whole point of having an oracle.
+   **Check:** a check or computation needed in more than one place (outside the brute-vs-optimized
+   exception) is factored into a single named function, called from each site rather than rewritten.
