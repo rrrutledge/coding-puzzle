@@ -316,3 +316,5 @@ Russell stops being the one catching recurring issues.
   hard stop" above. A reviewer-agent PASS earns the plan a look from him, not the go-ahead.
 - If Russell's own clarifying question or objection contradicts something already drafted, the artifact
   changes, not his framing.
+- When a bare "sure" or "yes" could confirm more than one pending thing, ask him which one before acting -
+  a structured choice beats a guess.
