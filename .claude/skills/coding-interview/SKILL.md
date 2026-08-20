@@ -31,14 +31,75 @@ When he gives feedback, dispatch it at once and surface the next queued item in 
 ## The shape
 
 Clarify first, then four lanes fan out, each gated, then a single verification chain, then document and
-complexity. The optimized lane is the critical path - lead with it.
+complexity. The optimized lane is the critical path - lead with it. Node color is which model runs the
+box; every lane runs the same `plan -> reviewer agent ∥ you -> both clear?` race.
 
-```
-                          ┌─ sample cases ─────┐
-  clarify (front gate) ───┼─ brute force ──────┼─→ verify chain ─→ document ─→ complexity ─→ stop
-     answer the Qs        ├─ OPTIMIZED (crit) ─┤
-     that change the      └─ cross-check harness┘
-     algorithm
+```mermaid
+flowchart TD
+    subgraph Legend [node color = which model runs it]
+        direction LR
+        LO[Opus: orchestrate + optimized plan]:::opus
+        LS[Sonnet: other plans + impl + docs]:::sonnet
+        LH[Haiku: reviewer agents]:::haiku
+        LY[You: clarify + reviews]:::human
+        LM[Mechanical: gates + test runs]:::mech
+    end
+
+    S([Problem stated]) --> CQ{{Clarify: answer the questions<br/>that change the algorithm}}
+
+    CQ --> P3[Plan: optimized approach]
+    CQ --> P1[Plan: sample cases]
+    CQ --> P2[Plan: brute force]
+    CQ --> P4[Plan: cross-check harness]
+
+    P3 --> A3[[reviewer agent]]
+    P3 --> Y3{{You review}}
+    A3 --> M3{both clear?}
+    Y3 --> M3
+    M3 -->|feedback| P3
+    M3 -->|approved| I3[Implement optimized]
+
+    P1 --> A1[[reviewer agent]]
+    P1 --> Y1{{You review}}
+    A1 --> M1{both clear?}
+    Y1 --> M1
+    M1 -->|feedback| P1
+    M1 -->|approved| L1[Cases locked as fixtures]
+
+    P2 --> A2[[reviewer agent]]
+    P2 --> Y2{{You review}}
+    A2 --> M2{both clear?}
+    Y2 --> M2
+    M2 -->|feedback| P2
+    M2 -->|approved| I2[Implement brute oracle]
+
+    P4 --> A4[[reviewer agent]]
+    P4 --> Y4{{You review}}
+    A4 --> M4{both clear?}
+    Y4 --> M4
+    M4 -->|feedback| P4
+    M4 -->|approved| I4[Implement harness]
+
+    L1 --> V1[[Verify brute vs fixtures]]
+    I2 --> V1
+    V1 --> V2[[Cross-check optimized == brute]]
+    I3 --> V2
+    I4 --> V2
+    V2 --> E[Edge cases + fix loop]
+    I3 --> E
+    E --> D[Document: JSDoc on shipped solution]
+    D --> C([Complexity out loud + stop])
+
+    classDef opus fill:#c7d7f5,stroke:#3b5ba5,color:#000;
+    classDef sonnet fill:#cde7d8,stroke:#4a9d6a,color:#000;
+    classDef haiku fill:#e6d5f0,stroke:#9673a6,color:#000;
+    classDef human fill:#ffe0b3,stroke:#d79b00,color:#000;
+    classDef mech fill:#e8e8e8,stroke:#999999,color:#000;
+    class P3 opus;
+    class P1,P2,P4,I2,I3,I4,L1,D sonnet;
+    class A1,A2,A3,A4 haiku;
+    class CQ,Y1,Y2,Y3,Y4 human;
+    class M1,M2,M3,M4,V1,V2,E,S,C mech;
 ```
 
 ### 0. Clarify-first front gate
