@@ -14,6 +14,12 @@
       "Bash(ls *)"
     ]
   },
-  "enabledPlugins": {},
-  "model": "sonnet"
+  "model": "sonnet",
+  "enabledPlugins": {
+    "safe-compounds@rrrutledge-claude-code-plugins": true,
+    "screenshot@rrrutledge-claude-code-plugins": true
+  },
+  "disableAutoMode": "disable",
+  "agentPushNotifEnabled": true,
+  "tui": "fullscreen"
 }
