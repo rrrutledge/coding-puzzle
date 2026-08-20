@@ -24,12 +24,11 @@ never idle while you are heads-down, and you are never blocked waiting on him: h
 artifact overlaps your building of the next.
 
 **One thing to review at a time.** Work keeps happening in the background no matter what Russell is doing
-- lanes keep drafting, reviewer agents keep running - but none of it surfaces on screen. Show him exactly
-one artifact, ask him to review it, then print nothing else until he resolves it (approves it, or you've
-applied his feedback and re-shown the revision for another look). Only once that item is resolved do you
-show the next thing - never a second item competing for his attention, never a queued-artifact notice
-landing mid-review. If something else clears its reviewer agent while he's still on the current item, it
-waits silently; when he's free, hand him the next thing in this order:
+- lanes keep drafting, reviewer agents keep running - silently. Show him exactly one artifact, ask him to
+review it, then wait: the next thing that prints is his reply, or the revision built from his feedback for
+another look. Once that item is resolved, hand him the next thing - always one artifact, always the one
+currently in front of him. Anything else that clears its reviewer agent while he's mid-review joins the
+queue silently and waits its turn. When he's free, hand him the next thing in this order:
 1. Something that has already **passed its reviewer agent** - a pre-vetted artifact.
 2. If nothing has cleared a reviewer yet, **anything that has been built** - better than letting him sit.
 Label what you hand him (which lane, which revision) so it's unambiguous.
@@ -155,16 +154,13 @@ context intact. An approved plan unlocks that lane's implementation. The impleme
 passes one more gate - `/code-review` plus the good-code agent, raced against Russell - before the
 complexity step.
 
-**The gate is a hard stop, not a status check.** A reviewer-agent PASS is not Russell's review - it only
-means he's looking at a pre-vetted plan instead of a raw one. It unlocks nothing by itself. Implementation
-for a lane never launches until Russell has typed his own explicit approval of that specific plan, in his
-own words, in this conversation. The moment a plan is surfaced for his review, end your turn: take no
-further action on that lane - no implementation dispatch, no "proceeding since the reviewer agent cleared
-it" - until his next message actually addresses it. Never call a plan "approved," in a status update or
-to Russell himself, until his own words say so; a reviewer-agent PASS gets its own word ("cleared review"
-or similar) so the two are never conflated. If you catch yourself about to report "all plans approved"
-and Russell's own approval is missing for any one of them, stop and get it before implementation runs -
-same as any other guardrail violation, explain it before touching anything further.
+**The gate is a hard stop, not a status check.** A reviewer-agent PASS means the plan is pre-vetted for
+Russell to look at - it is a separate signal from his review, and earns its own word, "cleared review."
+"Approved" is reserved for Russell's own reply. Implementation for a lane launches only once that reply
+has arrived, in his own words, in this conversation. The moment a plan is surfaced for his review, end
+your turn there and wait; the next thing that happens on that lane is his reply. Before reporting a set of
+plans as approved, confirm each one actually carries Russell's own word for it - that check is the
+standing precondition for implementation, same as any other gate in this loop.
 
 ### Verification chain (the load-bearing part)
 
@@ -276,7 +272,7 @@ Russell stops being the one catching recurring issues.
   the loop and gets explained before any code changes.
 - The brute force stays obviously-correct - it is the oracle, and a clever brute is a broken oracle.
 - Small, reviewable artifacts at each gate. Russell reads and owns every one before the next step.
-- A reviewer agent's PASS never substitutes for Russell's own approval. Implementation for a lane waits
-  for his explicit word on that plan - see "The gate is a hard stop" above.
+- Implementation for a lane launches only once Russell's own word approves that plan - see "The gate is a
+  hard stop" above. A reviewer-agent PASS earns the plan a look from him, not the go-ahead.
 - If Russell's own clarifying question or objection contradicts something already drafted, the artifact
   changes, not his framing.

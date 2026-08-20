@@ -29,11 +29,11 @@ violation, and a real violation using none of the listed forms is still a violat
 1. **Name the boundary handling.** The optimized plan states what happens on invalid or edge input -
    `k` outside `[1, n]`, an empty collection, `k = 0` - not just the happy path. This is part of the
    approach, not deferred to implementation.
-   **Check:** the plan has no line addressing `k`'s bounds (for a selection problem) or the
-   empty/single-element case, despite the clarify step having raised it.
+   **Check:** the plan states, for each boundary the clarify step raised (`k`'s valid range, the
+   empty/single-element case), what the code does there.
 2. **Lead with the mental model.** Before the steps, a few sentences (or a short paragraph) state the
    intuition that makes the approach work - the invariant it maintains, or the insight that rules out the
    naive approach. Steps alone are not a plan; they are the mechanics of an idea the reader hasn't been
    given yet.
-   **Check:** the plan opens straight into numbered/bulleted steps with no framing sentence explaining
-   why that sequence of steps solves the problem.
+   **Check:** the plan opens with a sentence or two stating the intuition - the invariant or insight -
+   before the first step.
