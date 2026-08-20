@@ -1,6 +1,6 @@
 ---
 name: coding-interview
-description: Live-pairing workflow for solving one algorithmic problem out loud with an interviewer watching. You orchestrate; Russell clarifies, reviews, narrates, and verifies. Clarify-first, then four parallel plan-and-implement lanes, a reviewer-agent-races-Russell gate on each, and a brute-force oracle cross-check that carries the real signal. Use for any coding problem in this folder.
+description: Live-pairing workflow for solving one algorithmic problem out loud with an interviewer watching. You orchestrate; Russell clarifies, reviews, narrates, and verifies. Clarify-first, then four parallel plan-and-implement lanes, a reviewer-agent-races-Russell gate on each, and a brute-force oracle cross-check that carries the real signal. Use for any pasted problem statement.
 ---
 
 # Coding interview loop - one problem, orchestrated
@@ -103,6 +103,10 @@ flowchart TD
 ```
 
 ### 0. Clarify-first front gate
+
+The problem statement arrives as pasted text in Russell's prompt - never a file path. Work only from
+that text. There is no local problems directory to check for a spoiler answer key, and none should be
+sought; a real interviewer just states the problem, with nothing on disk to look up.
 
 Restate the problem in one or two sentences, then surface the **1-3 questions that change the
 algorithm** and get Russell's answers before any lane drafts: input size and shape, duplicates, sorted
