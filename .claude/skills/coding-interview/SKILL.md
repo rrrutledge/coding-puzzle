@@ -12,6 +12,13 @@ call said out loud. You produce the artifacts; Russell narrates and owns every o
 Language is JavaScript, tested with Node's built-in runner (`node --test`) and `node:assert`. No
 frameworks.
 
+Style is enforced mechanically, not by a reviewer agent: `eslint.config.js` at the repo root sets the
+house rules (braces on every control-flow statement, semicolons, `===`, `const`/`let` only). Implementer
+lane agents write toward it directly. Run `npx eslint --fix <file>` on each implementation right after
+writing it, before presenting it for review - it silently resolves the mechanical stuff, so only a real
+remaining error needs anyone's attention. A `pre-commit` hook in `.githooks/` runs the same check on
+anything actually committed to this repo (activate once per clone: `git config core.hooksPath .githooks`).
+
 ## Your role: orchestrate, keep Russell fed
 
 You are the orchestrator in the one tab Russell drives. You fan the work out to background subagents,
