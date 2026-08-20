@@ -65,6 +65,14 @@ the single one chosen by the order above - not a menu of two or three "look at w
 one-at-a-time rule means you pick the next artifact for him and present it, and the rest stay silent until
 their turn.
 
+**Presenting the artifact ends your turn, and the turn stays his until he replies.** The message that
+shows him the artifact is the last thing you print; then you stop, so the prompt returns to him and it is
+unmistakably his turn to act. Nothing else prints into the tab while he reviews - not a status line, not
+the next artifact, not a note that some agent just finished. Meanwhile the lanes and reviewer agents keep
+running at full speed the whole time: yielding pauses only your output to him, never their work. Whatever
+they finish while he reviews lands silently in the queue and is surfaced only after he takes his turn and
+frees up. The one thing that ends his turn is his own reply.
+
 ## The shape
 
 Clarify first, then four lanes fan out, each gated, then a single verification chain, then document and
