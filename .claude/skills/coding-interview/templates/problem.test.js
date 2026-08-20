@@ -2,15 +2,19 @@
 
 // Per-problem test harness for the coding-interview loop.
 // Fill bruteSolve/solve in the paired source file first (e.g. rep.js), point
-// the require below at it, then fill FIXTURES and randomInput here.
+// the require below at it, then fill the fixtures and inputArbitrary here.
 // Run with:  node --test <file>
 //
 // Three things live here: hand-derived fixtures, the equivalence check for
-// problems whose answer isn't unique, and the random cross-check that asserts
-// solve === bruteSolve. That cross-check is the load-bearing verification.
+// problems whose answer isn't unique, and the random cross-check (via
+// fast-check) that asserts solve === bruteSolve. That cross-check is the
+// load-bearing verification.
 
+// eslint-disable-next-line no-unused-vars -- stub; used once the fixture/cross-check test() calls are added below
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+// eslint-disable-next-line no-unused-vars -- stub; used once inputArbitrary/the cross-check are filled in
+const fc = require('fast-check');
 const { solve, bruteSolve } = require('./problem'); // TODO: point at the working source file
 
 // ── Equivalence: are two outputs both valid answers for this input? ────────────
@@ -59,47 +63,48 @@ function checkFixture(name, input, expected) {
   console.log(`fixture "${name}": ${JSON.stringify(input)} -> ${JSON.stringify(expected)}`);
 }
 
+// A boundary fixture whose expected behavior is rejection - out of range or the
+// wrong type entirely - rather than a value. See good-test.md rule 4.
+// eslint-disable-next-line no-unused-vars -- stub; used once test() calls are added below
+function checkThrows(name, input, ErrorType) {
+  assert.throws(() => bruteSolve(...input), ErrorType, `brute should reject fixture "${name}"`);
+  assert.throws(() => solve(...input), ErrorType, `optimized should reject fixture "${name}"`);
+  console.log(`fixture "${name}": ${JSON.stringify(input)} -> throws ${ErrorType.name}`);
+}
+
 // TODO: one test() per locked fixture, e.g.:
 // test('fixture: empty', () => checkFixture('empty', [[], 0], []));
 // test('fixture: single', () => checkFixture('single', [[5], 1], [5]));
+// test('fixture: wrong type', () => checkThrows('k is a string', [[1, 2, 3], '2'], TypeError));
 
 // ── Random input generator ────────────────────────────────────────────────────
-// Deliberately reaches the edge dimensions: sometimes empty, sometimes one
-// element, forces duplicates and negatives, and varies k across its whole range -
-// so a boundary bug actually gets generated instead of hidden.
-// eslint-disable-next-line no-unused-vars -- stub; the filled-in body uses rng
-function randomInput(rng) {
-  // TODO: build and return the argument array, e.g. [nums, k].
-  throw new Error('randomInput not implemented');
-}
-
-// Tiny seeded PRNG so every trial is reproducible and a failure can be re-run.
-function makeRng(seed) {
-  const LCG_MULTIPLIER = 1664525; // Numerical Recipes LCG multiplier
-  const LCG_INCREMENT = 1013904223; // Numerical Recipes LCG increment
-  const UINT32_RANGE = 2 ** 32; // normalizes the 32-bit state into [0, 1)
-  let s = seed >>> 0 || 1;
-  return () => {
-    s = (Math.imul(s, LCG_MULTIPLIER) + LCG_INCREMENT) >>> 0;
-    return s / UINT32_RANGE;
-  };
-}
+// fast-check, not a hand-rolled PRNG - it already biases toward edge cases
+// (empty, single-element, boundary values) and shrinks a failure to its
+// minimal counterexample. Compose it from the problem's own shape; see
+// examples/top-k-frequent.test.js for a worked one (a small element pool to
+// force duplicates/ties, k derived from nums via .chain()).
+// TODO: build the real arbitrary, e.g.:
+// const inputArbitrary = fc
+//   .array(fc.integer({ min: -100, max: 100 }))
+//   .chain((nums) => fc.integer({ min: 1, max: Math.max(nums.length, 1) }).map((k) => [nums, k]));
 
 // ── Cross-validation: the load-bearing check ──────────────────────────────────
-test('cross-check: optimized matches brute on random inputs', () => {
-  const TRIALS = 2000;
-  for (let i = 0; i < TRIALS; i++) {
-    const rng = makeRng(i + 1);
-    const input = randomInput(rng);
-    const got = solve(...input);
-    const want = bruteSolve(...input);
-    assert.ok(
-      equivalent(input, got, want),
-      `mismatch on trial ${i}\n` +
-        `  input:     ${JSON.stringify(input)}\n` +
-        `  optimized: ${JSON.stringify(got)}\n` +
-        `  brute:     ${JSON.stringify(want)}`,
-    );
-  }
-  console.log(`cross-check: ${TRIALS} trials, 0 mismatches`);
-});
+// TODO: uncomment once inputArbitrary is filled in.
+// test('cross-check: optimized matches brute on random inputs', () => {
+//   const NUM_RUNS = 2000;
+//   fc.assert(
+//     fc.property(inputArbitrary, (input) => {
+//       const got = solve(...input);
+//       const want = bruteSolve(...input);
+//       assert.ok(
+//         equivalent(input, got, want),
+//         `mismatch\n` +
+//           `  input:     ${JSON.stringify(input)}\n` +
+//           `  optimized: ${JSON.stringify(got)}\n` +
+//           `  brute:     ${JSON.stringify(want)}`,
+//       );
+//     }),
+//     { numRuns: NUM_RUNS, seed: 1 },
+//   );
+//   console.log(`cross-check: ${NUM_RUNS} fast-check runs (seed 1), 0 mismatches`);
+// });

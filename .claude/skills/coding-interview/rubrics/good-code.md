@@ -32,10 +32,12 @@ is that evidence being absent, not the presence of some named bad pattern.
    **Check:** the code copies or derives a new structure before sorting or transforming it, matching a
    problem statement that leaves the input's ownership with the caller.
 2. **Validate the boundaries.** The code checks the standing set regardless of whether the plan spelled
-   each one out: too high, too low, `null`/`undefined`, and missing/wrong-type arguments - not just the
-   happy path the examples show.
-   **Check:** the code checks each bounded parameter against its valid range in both directions, and
-   guards for `null`/`undefined`/missing arguments.
+   each one out: too high, too low, `null`/`undefined`, missing arguments, and the wrong type - a string
+   where a number was expected, a number where a string was expected - not just the happy path the
+   examples show.
+   **Check:** the code checks each bounded parameter against its valid range in both directions, guards
+   for `null`/`undefined`/missing arguments, and rejects an argument of the wrong type rather than letting
+   it silently coerce or produce a wrong answer.
 3. **Comment every logical block.** The function body is broken into blank-line-separated groups of
    statements, each doing one step of the algorithm, with a one-line comment directly above the group
    stating in plain terms what it does. Someone should be able to read only the comments, top to bottom,

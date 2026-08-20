@@ -127,7 +127,8 @@ sought; a real interviewer just states the problem, with nothing on disk to look
 
 Restate the problem in one or two sentences, then surface the **1-3 questions that change the
 algorithm** and get Russell's answers before any lane drafts: input size and shape, duplicates, sorted
-or not, mutation allowed, tie-breaking, what k means at the boundaries (k=0, k=n), negatives. Keep it to
+or not, mutation allowed, tie-breaking, what k means at the boundaries (k=0, k=n), negatives, and what
+happens on a wrong-typed argument (a string where a number is expected, or vice versa). Keep it to
 seconds. Writing the sample cases is itself part of clarifying - it forces the tie and boundary
 questions into the open.
 
@@ -155,9 +156,10 @@ harness. Same file, both sides: the creator holds the reviewer's rubric.
 3. **Optimized solution** - plan is the approach and the "what are we optimizing" call (time vs space;
    for a selection problem the k-vs-n choice among heap, quickselect, sort). **This is the critical
    path.** Lead with it. Lands in the working **source** file, alongside the brute reference.
-4. **Cross-check harness** - plan is the random-input generator design (varied sizes, empty, one
-   element, duplicates, negatives, full k range). It depends only on the function signature, so it
-   proceeds alongside the optimized work. Lands in the working **test** file.
+4. **Cross-check harness** - plan is the fast-check `inputArbitrary` design (varied sizes, empty, one
+   element, duplicates, negatives, full k range) - composed from fast-check's arbitraries, not a
+   hand-rolled generator; see `examples/top-k-frequent.test.js`. It depends only on the function
+   signature, so it proceeds alongside the optimized work. Lands in the working **test** file.
 
 ### The review gate (runs on every lane)
 
@@ -186,7 +188,7 @@ At the start of a rep, create a local scratch branch off `main` for the rep's wo
 diff against. Copy `templates/problem.js` and `templates/problem.test.js` to a matched pair of working
 files on that branch (e.g. `rep.js` and `rep.test.js`), point the test file's `require` at the source
 file, and fill both in there. Source (`bruteSolve`, `solve`) and test infrastructure (fixtures,
-`equivalent`, `randomInput`, the harness) stay in their own files - never merged into one.
+`equivalent`, the fast-check harness) stay in their own files - never merged into one.
 
 Whenever an implementation - brute, optimized, harness, or the locked fixtures - is ready for Russell to
 look at, write it to its file (source changes in `rep.js`, test changes in `rep.test.js`) and `git add`
@@ -277,10 +279,10 @@ the verdict. Profile each reviewer's time during practice and cut any that costs
 ## Files
 
 - `templates/problem.js` + `templates/problem.test.js` - the per-problem template, split source from
-  test. Copy both to a matched working pair and fill the four slots: `bruteSolve` and `solve` in the
-  `.js` file, the fixtures and `randomInput` in the `.test.js` file. The test file already holds the
-  seeded random cross-check that asserts `solve === bruteSolve`, and an `equivalent(input, a, b)` seam
-  for problems whose answer is not unique.
+  test. Copy both to a matched working pair and fill in: `bruteSolve` and `solve` in the `.js` file, the
+  fixtures and a fast-check `inputArbitrary` in the `.test.js` file. The test file already holds the
+  fast-check cross-check that asserts `solve === bruteSolve`, and an `equivalent(input, a, b)` seam for
+  problems whose answer is not unique.
 - `examples/top-k-frequent.js` + `examples/top-k-frequent.test.js` - one fully worked instance (Top K
   Frequent Elements), runnable with `node --test examples/top-k-frequent.test.js`. The test file shows
   the tie-aware `equivalent` that compares the frequency profile rather than the raw elements, so two

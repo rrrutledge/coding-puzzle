@@ -9,10 +9,26 @@
 // The paired top-k-frequent.test.js has the fixtures, the equivalence check, and
 // the random cross-check.
 
+// ── Input validation: shared between brute and optimized ─────────────────────
+// Both must reject the same bad input identically. This isn't part of the
+// algorithm the cross-check verifies (which only ever generates well-typed
+// inputs), so sharing it doesn't undermine the oracle's independence - see
+// good-code.md rule 7.
+function validateInput(nums, k) {
+  if (!Array.isArray(nums)) {
+    throw new TypeError('nums must be an array');
+  }
+  if (!Number.isInteger(k) || k < 0) {
+    throw new RangeError(`k must be a non-negative integer, got ${k}`);
+  }
+}
+
 // ── Brute reference: the oracle ───────────────────────────────────────────────
-// Count, sort the distinct values by count descending, take the first k. Plainly
-// correct; O(n + m log m) where m is the distinct count. Not shipped.
+// Reject bad input first, then count, sort the distinct values by count
+// descending, and take the first k. Plainly correct; O(n + m log m) where m is
+// the distinct count. Not shipped.
 function bruteTopK(nums, k) {
+  validateInput(nums, k);
   const counts = new Map();
   for (const n of nums) {counts.set(n, (counts.get(n) ?? 0) + 1);}
   return [...counts.keys()]
@@ -34,6 +50,9 @@ function bruteTopK(nums, k) {
  * materializing n buckets is the cost that dominates.
  */
 function topKFrequent(nums, k) {
+  // Reject bad input before doing any work.
+  validateInput(nums, k);
+
   // Count how many times each value appears.
   const counts = new Map();
   for (const n of nums) {counts.set(n, (counts.get(n) ?? 0) + 1);}
