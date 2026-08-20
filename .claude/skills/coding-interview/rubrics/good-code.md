@@ -63,13 +63,17 @@ is that evidence being absent, not the presence of some named bad pattern.
    flag) in a variable and let the loop or function finish naturally instead.
    **Check:** the function's only `return` is its final statement, no loop body contains a `break`, and a
    loop that stops early for a non-index reason has that reason folded into its own test expression.
-7. **No repeated code or repeated concepts.** The same logic or check, needed more than once, becomes one
-   named helper used from every call site - not restated with slightly different wording each time.
-   Exception: the brute reference and the optimized solution stay independently implemented even where
-   that means some structural overlap (both computing a frequency count from scratch, say) - sharing that
-   logic between them would let one bug fool both, defeating the whole point of having an oracle.
+7. **No repeated code or repeated concepts.** Two ways to fix the same logic or check needed more than
+   once: factor it into one named helper used from every call site, or restructure the flow so the logic
+   only runs in one place and everything depending on it happens right there too - removing the second
+   occurrence rather than extracting it. Either is fine; what matters is the logic existing exactly once,
+   not restated with slightly different wording each time. Exception: the brute reference and the
+   optimized solution stay independently implemented even where that means some structural overlap (both
+   computing a frequency count from scratch, say) - sharing that logic between them would let one bug fool
+   both, defeating the whole point of having an oracle.
    **Check:** a check or computation needed in more than one place (outside the brute-vs-optimized
-   exception) is factored into a single named function, called from each site rather than rewritten.
+   exception) exists at exactly one site in the code - either as a single named function called from every
+   place that needs it, or because the flow was restructured so only one place ever needed it.
 8. **No magic numbers.** Any numeric literal other than `0` or `1` either carries a comment explaining
    what it is, or is assigned to a constant whose name says what it is. This is about numbers embedded in
    the algorithm's logic (thresholds, offsets, generator constants) - hand-derived fixture data is
