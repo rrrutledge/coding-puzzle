@@ -76,6 +76,19 @@ running at full speed the whole time: yielding pauses only your output to him, n
 they finish while he reviews lands silently in the queue and is surfaced only after he takes his turn and
 frees up. The one thing that ends his turn is his own reply.
 
+**When his reply lands, lead with the next artifact - route his feedback after it.** His reply is the
+trigger to feed him the next thing, and he is already waiting on it, so the next ready artifact (chosen
+by the order above) is the first thing the response emits: its label and its content, right at the top,
+before anything else. His feedback still gets routed to its lane, an approved implementation still
+launches, an approved staged diff still gets committed - but those ride as silent tool calls after the
+hand-off text, where they produce no printed output in his turn and add nothing to the wait before he
+sees the artifact. What must never come first is generated prose that delays the artifact: a recap of his
+feedback, a note on what you are about to do with it, a status line on the other lanes. The hand-off
+echoes an artifact already in hand rather than composing one fresh, so it stays short - one line naming
+the lane and revision, then the plan's model and steps or the staged-diff pointer, and stop. This is the
+fast path for the stall Russell feels: something is already vetted and waiting, and only orchestrator
+overhead sits between his reply and seeing it.
+
 ## The shape
 
 Clarify first, then four lanes fan out, each gated, then a single verification chain, then document and
