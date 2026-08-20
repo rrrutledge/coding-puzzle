@@ -211,7 +211,10 @@ Gated on the implementations, run in order:
 
 The template and worked example already wire this chain up (see Files below): a mismatch prints the
 failing input and both outputs, and the comparison is on the answer's invariant so a validly-different
-answer is not misread as a bug.
+answer is not misread as a bug. The fixtures and the cross-check are two different kinds of coverage, not
+stand-ins for each other - both stay in the test file for the rest of the rep once both lanes land, the
+fast fixtures for a quick run and the randomized suite for the load-bearing check. Every test logs a
+one-line summary of what it actually ran, so a pass is never ambiguous with a no-op - see `good-test.md`.
 
 ### Document, then state complexity, then stop
 

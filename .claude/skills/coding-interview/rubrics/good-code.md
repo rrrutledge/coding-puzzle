@@ -49,3 +49,17 @@ is that evidence being absent, not the presence of some named bad pattern.
    makes it optimal.
    **Check:** each functional array-method call stands on its own rather than feeding directly into
    another `.map()`/`.filter()`/`.reduce()`, and the core optimized step is written as an explicit loop.
+5. **Functions live at the same level.** Every function - including small helpers - is its own top-level
+   declaration, not nested inside another function's body. A helper that needs data from its caller takes
+   it as a parameter instead of closing over it.
+   **Check:** every `function`, arrow, or method lives at module scope; none is declared inside another
+   function's body.
+6. **Single return, loops run to completion.** A function returns once, as its last statement - no
+   `return` partway through the body. A loop runs until its own condition goes false; nothing exits it
+   early with `break`. A loop's test expression isn't limited to the index bound - fold any other stopping
+   condition into it with `&&` (`i < n && !found`, `i < arr.length && result.length < k`) so the loop still
+   terminates itself the moment that condition trips, without wasting iterations the way a body-only guard
+   would. Where neither the index nor a combined condition can express the stop, track the result (or a
+   flag) in a variable and let the loop or function finish naturally instead.
+   **Check:** the function's only `return` is its final statement, no loop body contains a `break`, and a
+   loop that stops early for a non-index reason has that reason folded into its own test expression.
