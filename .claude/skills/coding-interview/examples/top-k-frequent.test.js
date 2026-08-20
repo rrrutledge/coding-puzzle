@@ -12,6 +12,7 @@
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const fc = require('fast-check');
 const { topKFrequent, bruteTopK } = require('./top-k-frequent');
 
 // ── Equivalence: both outputs valid answers for this input? ───────────────────
@@ -50,6 +51,14 @@ function checkFixture(name, input, expected) {
   console.log(`fixture "${name}": ${JSON.stringify(input)} -> ${JSON.stringify(expected)}`);
 }
 
+// A boundary fixture whose expected behavior is rejection - the wrong type
+// entirely, not just a wrong value. See good-test.md rule 4.
+function checkThrows(name, input, ErrorType) {
+  assert.throws(() => bruteTopK(...input), ErrorType, `brute should reject fixture "${name}"`);
+  assert.throws(() => topKFrequent(...input), ErrorType, `optimized should reject fixture "${name}"`);
+  console.log(`fixture "${name}": ${JSON.stringify(input)} -> throws ${ErrorType.name}`);
+}
+
 test('fixture: typical', () => checkFixture('typical', [[1, 1, 1, 2, 2, 3], 2], [1, 2]));
 test('fixture: k = distinct (return all)', () =>
   checkFixture('k = distinct (return all)', [[4, 5, 6], 3], [4, 5, 6]));
@@ -60,47 +69,38 @@ test('fixture: negatives', () =>
   checkFixture('negatives', [[-1, -1, -2, -2, -2, 3], 2], [-2, -1]));
 test('fixture: tie at boundary (either is valid)', () =>
   checkFixture('tie at boundary (either is valid)', [[1, 2], 1], [1]));
+test('fixture: wrong type (k is a string)', () =>
+  checkThrows('k is a string', [[1, 2, 3], '2'], RangeError));
+test('fixture: wrong type (nums is not an array)', () =>
+  checkThrows('nums is not an array', ['not an array', 2], TypeError));
 
 // ── Random input generator: spans the edge dimensions ─────────────────────────
-// Small value pool forces frequent duplicates and ties; length reaches 0 and 1;
-// negatives appear; k ranges 0..distinct so both extremes get hit.
-function randomInput(rng) {
-  const len = Math.floor(rng() * 12); // 0..11, so empty and single occur
-  const nums = [];
-  for (let i = 0; i < len; i++) {
-    nums.push(Math.floor(rng() * 9) - 4); // pool -4..4, heavy repeats
-  }
-  const distinct = new Set(nums).size;
-  const k = Math.floor(rng() * (distinct + 1)); // 0..distinct
-  return [nums, k];
-}
-
-function makeRng(seed) {
-  const LCG_MULTIPLIER = 1664525; // Numerical Recipes LCG multiplier
-  const LCG_INCREMENT = 1013904223; // Numerical Recipes LCG increment
-  const UINT32_RANGE = 2 ** 32; // normalizes the 32-bit state into [0, 1)
-  let s = seed >>> 0 || 1;
-  return () => {
-    s = (Math.imul(s, LCG_MULTIPLIER) + LCG_INCREMENT) >>> 0;
-    return s / UINT32_RANGE;
-  };
-}
+// fast-check, not a hand-rolled PRNG - it already biases toward edge cases
+// (empty, single-element, boundary values) and shrinks a failure to its minimal
+// counterexample, which a hand-rolled generator only does if you build it
+// yourself. A small element pool forces frequent duplicates and ties, which
+// matters for this problem specifically; k is derived from nums so it always
+// lands in the valid 0..distinct range.
+const inputArbitrary = fc
+  .array(fc.integer({ min: -4, max: 4 }), { maxLength: 30 })
+  .chain((nums) => fc.integer({ min: 0, max: new Set(nums).size }).map((k) => [nums, k]));
 
 // ── Cross-validation: the load-bearing check ──────────────────────────────────
 test('cross-check: optimized matches brute on random inputs', () => {
-  const TRIALS = 2000;
-  for (let i = 0; i < TRIALS; i++) {
-    const rng = makeRng(i + 1);
-    const input = randomInput(rng);
-    const got = topKFrequent(...input);
-    const want = bruteTopK(...input);
-    assert.ok(
-      equivalent(input, got, want),
-      `mismatch on trial ${i}\n` +
-        `  input:     ${JSON.stringify(input)}\n` +
-        `  optimized: ${JSON.stringify(got)}\n` +
-        `  brute:     ${JSON.stringify(want)}`,
-    );
-  }
-  console.log(`cross-check: ${TRIALS} trials, 0 mismatches`);
+  const NUM_RUNS = 2000;
+  fc.assert(
+    fc.property(inputArbitrary, ([nums, k]) => {
+      const got = topKFrequent(nums, k);
+      const want = bruteTopK(nums, k);
+      assert.ok(
+        equivalent([nums, k], got, want),
+        `mismatch\n` +
+          `  input:     ${JSON.stringify([nums, k])}\n` +
+          `  optimized: ${JSON.stringify(got)}\n` +
+          `  brute:     ${JSON.stringify(want)}`,
+      );
+    }),
+    { numRuns: NUM_RUNS, seed: 1 },
+  );
+  console.log(`cross-check: ${NUM_RUNS} fast-check runs (seed 1), 0 mismatches`);
 });

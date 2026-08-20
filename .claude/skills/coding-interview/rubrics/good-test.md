@@ -45,3 +45,8 @@ is that evidence being absent, not the presence of some named bad pattern.
    runtime inside a loop is invisible to it even though `node --test` itself runs it fine.
    **Check:** each fixture has its own `test('fixture: <name>', ...)` call written out in the file, with
    the assertion logic factored into a shared top-level helper if it repeats.
+4. **A wrong-type fixture, not just wrong-range.** Alongside the too-high/too-low/empty/negative boundary
+   cases, one fixture passes an argument of the wrong type - a string where a number is expected, a number
+   where a string is expected - and expects the validation to reject it.
+   **Check:** the fixtures include a case whose input has at least one argument of the wrong type, with an
+   expectation that it's rejected (a thrown error, or whatever the approved plan called for on bad input).
