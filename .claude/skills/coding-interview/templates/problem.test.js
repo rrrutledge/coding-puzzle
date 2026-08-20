@@ -1,37 +1,17 @@
 'use strict';
 
-// Per-problem template for the coding-interview loop.
-// Copy this to a working file, fill the four slots, run with:  node --test <file>
+// Per-problem test harness for the coding-interview loop.
+// Fill bruteSolve/solve in the paired source file first (e.g. rep.js), point
+// the require below at it, then fill FIXTURES and randomInput here.
+// Run with:  node --test <file>
 //
-// Three artifacts live here together on purpose:
-//   bruteSolve  - the obviously-correct oracle (not shipped)
-//   solve       - the optimized, shipped solution
-//   the harness - runs both on many random inputs and asserts they agree
-// The optimized === brute cross-check is the load-bearing verification. Everything
-// else supports it.
+// Three things live here: hand-derived fixtures, the equivalence check for
+// problems whose answer isn't unique, and the random cross-check that asserts
+// solve === bruteSolve. That cross-check is the load-bearing verification.
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-
-// ── Brute reference: the oracle ───────────────────────────────────────────────
-// Obviously correct, no cleverness. Its only job is to be trustworthy so the
-// cross-check can lean on it. Slower is fine.
-function bruteSolve(/* args */) {
-  // TODO: the sort-then-index / nested-loop version you'd never doubt.
-  throw new Error('bruteSolve not implemented');
-}
-
-// ── Optimized solution: the shipped artifact ──────────────────────────────────
-/**
- * TODO one-line contract: what it takes and what it returns.
- * @param {*} TODO
- * @returns {*} TODO
- * Time: O(?)   Space: O(?)
- */
-function solve(/* args */) {
-  // TODO: the better-complexity approach from the approved plan.
-  throw new Error('solve not implemented');
-}
+const { solve, bruteSolve } = require('./problem'); // TODO: point at the working source file
 
 // ── Equivalence: are two outputs both valid answers for this input? ────────────
 // Many problems have more than one correct output (order unspecified, ties broken
@@ -117,5 +97,3 @@ test('cross-check: optimized matches brute on random inputs', () => {
     );
   }
 });
-
-module.exports = { solve, bruteSolve };
