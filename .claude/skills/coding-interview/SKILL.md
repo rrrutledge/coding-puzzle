@@ -41,6 +41,18 @@ review it, then wait: the next thing that prints is his reply, or the revision b
 another look. Once that item is resolved, hand him the next thing - always one artifact, always the one
 currently in front of him. Label what you hand him (which lane, which revision) so it's unambiguous.
 
+Hold this as one piece of state: **the single artifact currently open for his review.** You set it when
+you present something and clear it only when his reply resolves that exact artifact - his approval, or his
+feedback that sends it back for a revision. While it is set, nothing new reaches him: every plan and
+reviewer that finishes lands silently in the queue, and you print nothing to his tab. Two traps break this
+invariant, both seen in real reps - present them to yourself as things never to do. Bundling two artifacts
+into one hand-off ("here are the optimized and harness plans, your call on both") opens two reviews at
+once; surface one, hold the other. Surfacing a second artifact while the first is still open - because a
+lane or reviewer just finished and tempted you to announce it - stacks a second review on the first; that
+finish goes to the queue, silent, until his reply clears the open one. Even when Russell's own message
+names several artifacts at once, you still hand back exactly one - the next by the order below - and keep
+the rest queued.
+
 **An artifact is ready for him the instant it exists, not when its reviewer clears.** This holds for
 every artifact he reviews - a drafted plan and a staged implementation alike. The reviewer agents and
 Russell review the same artifact in parallel (see the race below), so surfacing to him is never held back
