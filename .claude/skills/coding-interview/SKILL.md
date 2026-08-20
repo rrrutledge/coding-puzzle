@@ -12,6 +12,18 @@ call said out loud. You produce the artifacts; Russell narrates and owns every o
 Language is JavaScript, tested with Node's built-in runner (`node --test`) and `node:assert`. No
 frameworks.
 
+Style is enforced mechanically, not by a reviewer agent: `eslint.config.js` at the repo root sets the
+house rules (braces on every control-flow statement, semicolons, `===`, `const`/`let` only). Implementer
+lane agents write toward it directly. Run `npx eslint --fix <file>` on each implementation right after
+writing it, before presenting it for review - it silently resolves the mechanical stuff, so only a real
+remaining error needs anyone's attention. A `pre-commit` hook in `.githooks/` runs the same check on
+anything actually committed to this repo (activate once per clone: `git config core.hooksPath .githooks`).
+
+Comments carry the narration: every implementation groups its statements into blank-line-separated blocks,
+one per algorithm step, with a one-line comment above each block stating in plain terms what it does - see
+`rubrics/good-code.md` and `examples/top-k-frequent.test.js` for the shape. Reading only the comments,
+top to bottom, should explain the approach before anyone reads a line of code.
+
 ## Your role: orchestrate, keep Russell fed
 
 You are the orchestrator in the one tab Russell drives. You fan the work out to background subagents,
@@ -23,10 +35,15 @@ The subagents do the drafting and reviewing in the background while the main tab
 never idle while you are heads-down, and you are never blocked waiting on him: his review of one
 artifact overlaps your building of the next.
 
-**Keep-fed priority - always hand Russell the next thing to look at in this order:**
+**One thing to review at a time.** Work keeps happening in the background no matter what Russell is doing
+- lanes keep drafting, reviewer agents keep running - silently. Show him exactly one artifact, ask him to
+review it, then wait: the next thing that prints is his reply, or the revision built from his feedback for
+another look. Once that item is resolved, hand him the next thing - always one artifact, always the one
+currently in front of him. Anything else that clears its reviewer agent while he's mid-review joins the
+queue silently and waits its turn. When he's free, hand him the next thing in this order:
 1. Something that has already **passed its reviewer agent** - a pre-vetted artifact.
 2. If nothing has cleared a reviewer yet, **anything that has been built** - better than letting him sit.
-When he gives feedback, dispatch it at once and surface the next queued item in the same breath.
+Label what you hand him (which lane, which revision) so it's unambiguous.
 
 ## The shape
 
@@ -120,7 +137,8 @@ independent** - no routine cross-lane messaging once they launch.
 ### The four lanes
 
 Every lane has the same shape: **plan -> review gate -> implement**. The plan *is* the pseudocode; there
-is no separate pseudocode artifact.
+is no separate pseudocode artifact. Every plan opens with a few sentences on the mental model - the
+intuition for why the approach works - before the steps; see `good-pseudocode.md`.
 
 **Spawn every lane subagent with the rubric its output will face, in its prompt** (`skills:` frontmatter,
 or the rubric file handed in to read), so the creator writes toward the exact bar the reviewer will
@@ -151,6 +169,14 @@ Feedback from either side loops back to the **same lane subagent**, which revise
 context intact. An approved plan unlocks that lane's implementation. The implemented optimized code
 passes one more gate - `/code-review` plus the good-code agent, raced against Russell - before the
 complexity step.
+
+**The gate is a hard stop, not a status check.** A reviewer-agent PASS means the plan is pre-vetted for
+Russell to look at - it is a separate signal from his review, and earns its own word, "cleared review."
+"Approved" is reserved for Russell's own reply. Implementation for a lane launches only once that reply
+has arrived, in his own words, in this conversation. The moment a plan is surfaced for his review, end
+your turn there and wait; the next thing that happens on that lane is his reply. Before reporting a set of
+plans as approved, confirm each one actually carries Russell's own word for it - that check is the
+standing precondition for implementation, same as any other gate in this loop.
 
 ### Verification chain (the load-bearing part)
 
@@ -262,5 +288,7 @@ Russell stops being the one catching recurring issues.
   the loop and gets explained before any code changes.
 - The brute force stays obviously-correct - it is the oracle, and a clever brute is a broken oracle.
 - Small, reviewable artifacts at each gate. Russell reads and owns every one before the next step.
+- Implementation for a lane launches only once Russell's own word approves that plan - see "The gate is a
+  hard stop" above. A reviewer-agent PASS earns the plan a look from him, not the go-ahead.
 - If Russell's own clarifying question or objection contradicts something already drafted, the artifact
   changes, not his framing.

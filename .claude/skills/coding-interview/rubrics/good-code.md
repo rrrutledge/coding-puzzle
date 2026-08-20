@@ -22,8 +22,23 @@ Earned from real reps, not guessed in advance. When a practice rep surfaces feed
 how the code should be written (not specific to one problem), the rubric-learning step folds it in here as
 a new rule.
 
-Each rule added here carries a **Check** naming the surface forms that usually mean it was broken. A
-checker applies the Check as evidence, not as the rule itself: a listed form is not automatically a
-violation, and a real violation using none of the listed forms is still a violation.
+Each rule added here carries a **Check** naming the surface form that shows the rule was followed - a
+checker looks for that form as evidence, not as the rule itself: finding it is a good sign but not
+automatic proof, and a rule can be satisfied through a form the Check doesn't name. What flags a violation
+is that evidence being absent, not the presence of some named bad pattern.
 
-_(No rules yet - the first reps fill this in. Until then, judge against the purpose stated above.)_
+1. **No input mutation.** The optimized (and brute) solution does not mutate its input parameters unless
+   the problem's contract requires the result in that same structure. Copy before sorting or modifying.
+   **Check:** the code copies or derives a new structure before sorting or transforming it, matching a
+   problem statement that leaves the input's ownership with the caller.
+2. **Validate the boundaries.** The code checks the standing set regardless of whether the plan spelled
+   each one out: too high, too low, `null`/`undefined`, and missing/wrong-type arguments - not just the
+   happy path the examples show.
+   **Check:** the code checks each bounded parameter against its valid range in both directions, and
+   guards for `null`/`undefined`/missing arguments.
+3. **Comment every logical block.** The function body is broken into blank-line-separated groups of
+   statements, each doing one step of the algorithm, with a one-line comment directly above the group
+   stating in plain terms what it does. Someone should be able to read only the comments, top to bottom,
+   and follow the algorithm before reading any code.
+   **Check:** every blank-line-delimited group of statements in the function carries a comment on the
+   line immediately above it, naming what that group does.

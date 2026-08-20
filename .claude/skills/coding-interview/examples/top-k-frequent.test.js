@@ -22,7 +22,7 @@ const assert = require('node:assert/strict');
 // correct; O(n + m log m) where m is the distinct count. Not shipped.
 function bruteTopK(nums, k) {
   const counts = new Map();
-  for (const n of nums) counts.set(n, (counts.get(n) ?? 0) + 1);
+  for (const n of nums) {counts.set(n, (counts.get(n) ?? 0) + 1);}
   return [...counts.keys()]
     .sort((a, b) => counts.get(b) - counts.get(a))
     .slice(0, k);
@@ -42,17 +42,19 @@ function bruteTopK(nums, k) {
  * materializing n buckets is the cost that dominates.
  */
 function topKFrequent(nums, k) {
+  // Count how many times each value appears.
   const counts = new Map();
-  for (const n of nums) counts.set(n, (counts.get(n) ?? 0) + 1);
+  for (const n of nums) {counts.set(n, (counts.get(n) ?? 0) + 1);}
 
   // buckets[c] = the values that appear exactly c times.
   const buckets = Array.from({ length: nums.length + 1 }, () => []);
-  for (const [value, c] of counts) buckets[c].push(value);
+  for (const [value, c] of counts) {buckets[c].push(value);}
 
+  // Walk buckets from the highest count down, collecting values until we have k.
   const result = [];
   for (let c = buckets.length - 1; c >= 1 && result.length < k; c--) {
     for (const value of buckets[c]) {
-      if (result.length === k) break;
+      if (result.length === k) {break;}
       result.push(value);
     }
   }
@@ -65,7 +67,7 @@ function topKFrequent(nums, k) {
 // absorbs order differences and tie-broken differences at once.
 function equivalent([nums, k], a, b) {
   const counts = new Map();
-  for (const n of nums) counts.set(n, (counts.get(n) ?? 0) + 1);
+  for (const n of nums) {counts.set(n, (counts.get(n) ?? 0) + 1);}
   const profile = (sel) =>
     sel
       .map((v) => counts.get(v))

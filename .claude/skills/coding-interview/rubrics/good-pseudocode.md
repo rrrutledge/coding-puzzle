@@ -3,10 +3,12 @@
 Reviews any lane's plan: the sample-case shape, the brute one-liner, the cross-check harness design, and
 above all the optimized approach - which is itself the pseudocode, not a separate artifact.
 
-A plan does its job when it is concrete enough to implement without inventing a decision the plan left
-open, it commits to the time and space it is aiming for, and - for the optimized lane - it names what is
-being optimized and the tradeoff behind the chosen approach (for a selection problem, the k-vs-n call).
-Judge each plan against that purpose, and against the specific rules below as they accumulate.
+A plan does its job when it opens with a few sentences naming the mental model - the intuition for *why*
+the approach works, stated before any step - then is concrete enough to implement without inventing a
+decision the plan left open, commits to the time and space it is aiming for, and - for the optimized lane
+- names what is being optimized and the tradeoff behind the chosen approach (for a selection problem, the
+k-vs-n call). Judge each plan against that purpose, and against the specific rules below as they
+accumulate.
 
 The creator (the lane subagent) writes toward this rubric and holds this same file, so most plans pass
 the first read. The reviewer agent reads the plan cold against this file and returns one verdict.
@@ -20,8 +22,19 @@ Earned from real reps, not guessed in advance. When a practice rep surfaces feed
 how plans should be written (not specific to one problem), the rubric-learning step folds it in here as a
 new rule.
 
-Each rule added here carries a **Check** naming the surface forms that usually mean it was broken. A
-checker applies the Check as evidence, not as the rule itself: a listed form is not automatically a
-violation, and a real violation using none of the listed forms is still a violation.
+Each rule added here carries a **Check** naming the surface form that shows the rule was followed - a
+checker looks for that form as evidence, not as the rule itself: finding it is a good sign but not
+automatic proof, and a rule can be satisfied through a form the Check doesn't name. What flags a violation
+is that evidence being absent, not the presence of some named bad pattern.
 
-_(No rules yet - the first reps fill this in. Until then, judge against the purpose stated above.)_
+1. **Name the boundary handling.** The optimized plan states what happens on invalid or edge input -
+   `k` outside `[1, n]`, an empty collection, `k = 0` - not just the happy path. This is part of the
+   approach, not deferred to implementation.
+   **Check:** the plan states, for each boundary the clarify step raised (`k`'s valid range, the
+   empty/single-element case), what the code does there.
+2. **Lead with the mental model.** Before the steps, a few sentences (or a short paragraph) state the
+   intuition that makes the approach work - the invariant it maintains, or the insight that rules out the
+   naive approach. Steps alone are not a plan; they are the mechanics of an idea the reader hasn't been
+   given yet.
+   **Check:** the plan opens with a sentence or two stating the intuition - the invariant or insight -
+   before the first step.

@@ -46,7 +46,7 @@ function equivalent(input, a, b) {
 
 function deepEqualUnordered(a, b) {
   if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length) return false;
+    if (a.length !== b.length) {return false;}
     const sa = [...a].map(String).sort();
     const sb = [...b].map(String).sort();
     return sa.every((v, i) => v === sb[i]);
@@ -85,6 +85,7 @@ for (const f of FIXTURES) {
 // Deliberately reaches the edge dimensions: sometimes empty, sometimes one
 // element, forces duplicates and negatives, and varies k across its whole range -
 // so a boundary bug actually gets generated instead of hidden.
+// eslint-disable-next-line no-unused-vars -- stub; the filled-in body uses rng
 function randomInput(rng) {
   // TODO: build and return the argument array, e.g. [nums, k].
   throw new Error('randomInput not implemented');

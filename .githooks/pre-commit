@@ -1,0 +1,11 @@
+#!/bin/sh
+# Lints staged JS files before allowing the commit. Activated via:
+#   git config core.hooksPath .githooks
+
+staged_js=$(git diff --cached --name-only --diff-filter=ACM -- '*.js')
+
+if [ -z "$staged_js" ]; then
+  exit 0
+fi
+
+npx eslint $staged_js
