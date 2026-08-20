@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(*)",
+      "Grep(*)",
+      "Glob(*)",
+      "Edit(C:/Users/russe/dev/hubspot-interview-prep/**)",
+      "Write(C:/Users/russe/dev/hubspot-interview-prep/**)",
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(node *)",
+      "Bash(git *)",
+      "Bash(mkdir *)",
+      "Bash(ls *)"
+    ]
+  },
+  "enabledPlugins": {},
+  "model": "sonnet"
+}
