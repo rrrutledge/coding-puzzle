@@ -125,12 +125,17 @@ The problem statement arrives as pasted text in Russell's prompt - never a file 
 that text. There is no local problems directory to check for a spoiler answer key, and none should be
 sought; a real interviewer just states the problem, with nothing on disk to look up.
 
+Two things are never asked - they are standing assumptions on every problem, so build to them without
+spending a question: the input is never mutated (work on a copy), and the code defends against malformed
+input (the wrong type, `null`/`undefined`, missing arguments) rather than trusting it well-formed. Russell's
+answer to both is fixed, so asking only wastes interview time; good-code rules 1 and 2 already hold the
+implementation to them.
+
 Restate the problem in one or two sentences, then surface the **1-3 questions that change the
 algorithm** and get Russell's answers before any lane drafts: input size and shape, duplicates, sorted
-or not, mutation allowed, tie-breaking, what k means at the boundaries (k=0, k=n), negatives, and what
-happens on a wrong-typed argument (a string where a number is expected, or vice versa). Keep it to
-seconds. Writing the sample cases is itself part of clarifying - it forces the tie and boundary
-questions into the open.
+or not, tie-breaking, what k means at the boundaries (k=0, k=n), and negatives. Keep it to seconds.
+Writing the sample cases is itself part of clarifying - it forces the tie and boundary questions into
+the open.
 
 Because the algorithm-affecting facts are settled here, the four lanes are **forward-only and
 independent** - no routine cross-lane messaging once they launch.
