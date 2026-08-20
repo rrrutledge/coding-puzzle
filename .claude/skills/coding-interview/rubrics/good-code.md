@@ -70,3 +70,9 @@ is that evidence being absent, not the presence of some named bad pattern.
    logic between them would let one bug fool both, defeating the whole point of having an oracle.
    **Check:** a check or computation needed in more than one place (outside the brute-vs-optimized
    exception) is factored into a single named function, called from each site rather than rewritten.
+8. **No magic numbers.** Any numeric literal other than `0` or `1` either carries a comment explaining
+   what it is, or is assigned to a constant whose name says what it is. This is about numbers embedded in
+   the algorithm's logic (thresholds, offsets, generator constants) - hand-derived fixture data is
+   self-explanatory from the case it sits in and isn't what this targets.
+   **Check:** every literal number besides `0`/`1` in the algorithm's logic has an explanatory comment on
+   the same or preceding line, or is declared as a named constant instead of appearing inline.

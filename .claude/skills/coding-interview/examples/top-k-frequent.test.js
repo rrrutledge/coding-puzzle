@@ -76,10 +76,13 @@ function randomInput(rng) {
 }
 
 function makeRng(seed) {
+  const LCG_MULTIPLIER = 1664525; // Numerical Recipes LCG multiplier
+  const LCG_INCREMENT = 1013904223; // Numerical Recipes LCG increment
+  const UINT32_RANGE = 2 ** 32; // normalizes the 32-bit state into [0, 1)
   let s = seed >>> 0 || 1;
   return () => {
-    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
-    return s / 2 ** 32;
+    s = (Math.imul(s, LCG_MULTIPLIER) + LCG_INCREMENT) >>> 0;
+    return s / UINT32_RANGE;
   };
 }
 
