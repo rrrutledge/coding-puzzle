@@ -9,15 +9,12 @@ Keep it to what an interviewer would say out loud, not a re-derivation.
 
 ## Clarifications
 
-The questions whose answer changes the algorithm, each with the answer we settled on:
+The questions whose answer changes the algorithm, each with the short answer we settled on. Keep these to a line each.
 
 - **<question>** - <answer>.
 - **<question>** - <answer>.
 
-Two assumptions hold on every problem and are not asked:
-
-- The input is never mutated - we work on a copy.
-- The code defends against malformed input (wrong type, `null`/`undefined`, missing arguments, out of range) rather than trusting it well-formed.
+Plus the two standing assumptions, held on every problem: the input is never mutated, and malformed input is rejected rather than trusted.
 
 ## Approach
 
@@ -36,7 +33,7 @@ Then the approach in a few sentences: the data structures, the core step that se
 How correctness was established in the open, not asserted:
 
 - **Brute oracle** - the obviously-correct reference the optimized solution is checked against, and why it is trustworthy.
-- **Fixtures** - the hand-derived cases and the boundaries they span (empty, single, ties, k at the edges, negatives, wrong-type/out-of-range rejection).
+- **Fixtures** - the hand-checked cases, listed in plain English (what each one covers: a single item, a boundary value, a tie, a rejected bad input), with no code or literal data shown.
 - **Cross-check** - the randomized run that asserts optimized and brute agree, the trial count, and the invariant they are compared on (so a validly-different answer is not misread as a bug).
 
 ## Code

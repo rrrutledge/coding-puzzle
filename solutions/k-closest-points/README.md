@@ -10,15 +10,12 @@ The result may be in any order.
 
 ## Clarifications
 
-- **How are ties at the k-th distance handled?** - Every point tied at the boundary distance is included, so the output can be longer than `k` (returning an arbitrary `k` of the tied points would be a different, harder-to-verify contract).
-- **Does the output need to be sorted?** - No. Any order is accepted, which is what lets us stop at a partition instead of a full sort.
-- **What is the valid range of `k`?** - `[1, n]`. `k = 0` and `k > n` are rejected.
-- **Distance metric** - Euclidean, but compared as *squared* distance: it preserves ordering, avoids `sqrt`, and stays exact so ties compare with real equality instead of float rounding.
+- **Ties at the k-th distance** - every point tied at the boundary is included, so the answer can be longer than `k`.
+- **Output order** - any order is fine, which lets us stop at a partition instead of a full sort.
+- **Range of `k`** - one through the number of points; anything outside is rejected.
+- **Distance** - Euclidean, compared as squared distance so ties stay exact.
 
-Two assumptions hold on every problem and were not asked:
-
-- The input is never mutated - both solutions read `points` by index and build their own scratch.
-- The code defends against malformed input: `points` must be a non-empty array of `[x, y]` pairs of finite numbers, and `k` must be an integer in `[1, n]`, else it throws `TypeError` or `RangeError`.
+Plus the two standing assumptions: the input is never mutated, and malformed input (wrong type, empty, out-of-range `k`) is rejected rather than trusted.
 
 ## Approach
 
@@ -35,7 +32,7 @@ Two assumptions hold on every problem and were not asked:
 ## Verification
 
 - **Brute oracle** - map every point to its squared distance, sort a copy, take the k-th smallest as the cutoff, and return every point at or under it. No cleverness, so it is trustworthy as the reference; ties fall out of the `<=` automatically.
-- **Fixtures** - twelve hand-derived cases spanning single point, `k = n`, duplicate points, a tie at the boundary, negative coordinates, and rejection cases for a wrong-type `k`, a non-numeric coordinate, `k` below and above range, and an empty array.
+- **Fixtures** - twelve cases worked out by hand, in plain words. The ones with a valid answer: two basic examples, a single point, requesting as many points as there are, a tie right at the cutoff, repeated identical points, and negative coordinates. The ones that should be rejected: a requested count of the wrong type, a coordinate that isn't a number, a count below the range, a count above the range, and an empty list of points.
 - **Cross-check** - 2000 fast-check runs over random inputs drawn from a small coordinate pool (`-5..5`, so ties are frequent), asserting the optimized and brute outputs are equivalent. Neither is trusted as ground truth: the check recomputes the canonical answer independently from `[points, k]` and confirms both candidates match it, so a validly-different ordering is never flagged as a bug.
 
 ## Code
