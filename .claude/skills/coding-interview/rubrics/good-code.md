@@ -36,3 +36,9 @@ is that evidence being absent, not the presence of some named bad pattern.
    happy path the examples show.
    **Check:** the code checks each bounded parameter against its valid range in both directions, and
    guards for `null`/`undefined`/missing arguments.
+3. **Comment every logical block.** The function body is broken into blank-line-separated groups of
+   statements, each doing one step of the algorithm, with a one-line comment directly above the group
+   stating in plain terms what it does. Someone should be able to read only the comments, top to bottom,
+   and follow the algorithm before reading any code.
+   **Check:** every blank-line-delimited group of statements in the function carries a comment on the
+   line immediately above it, naming what that group does.

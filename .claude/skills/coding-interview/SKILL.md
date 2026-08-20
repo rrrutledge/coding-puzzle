@@ -19,6 +19,11 @@ writing it, before presenting it for review - it silently resolves the mechanica
 remaining error needs anyone's attention. A `pre-commit` hook in `.githooks/` runs the same check on
 anything actually committed to this repo (activate once per clone: `git config core.hooksPath .githooks`).
 
+Comments carry the narration: every implementation groups its statements into blank-line-separated blocks,
+one per algorithm step, with a one-line comment above each block stating in plain terms what it does - see
+`rubrics/good-code.md` and `examples/top-k-frequent.test.js` for the shape. Reading only the comments,
+top to bottom, should explain the approach before anyone reads a line of code.
+
 ## Your role: orchestrate, keep Russell fed
 
 You are the orchestrator in the one tab Russell drives. You fan the work out to background subagents,
