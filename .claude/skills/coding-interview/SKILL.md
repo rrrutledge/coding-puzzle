@@ -41,12 +41,15 @@ review it, then wait: the next thing that prints is his reply, or the revision b
 another look. Once that item is resolved, hand him the next thing - always one artifact, always the one
 currently in front of him. Label what you hand him (which lane, which revision) so it's unambiguous.
 
-**An artifact is ready for him the instant it is drafted, not when its reviewer clears.** The reviewer
-agent and Russell review the same plan in parallel (see the race below), so surfacing to him is never
-held back for a reviewer to finish. The moment the first plan drafts and he is free, hand it over - even
-with its reviewer still running. A drafted plan sitting silently while Russell waits on a reviewer is the
-one failure this rule exists to prevent: keeping him fed always wins over handing him a pre-vetted plan
-later.
+**An artifact is ready for him the instant it exists, not when its reviewer clears.** This holds for
+every artifact he reviews - a drafted plan and a staged implementation alike. The reviewer agents and
+Russell review the same artifact in parallel (see the race below), so surfacing to him is never held back
+for a reviewer to finish. The moment a plan drafts or code is staged and he is free, hand it over - even
+with its reviewer still running. This applies as much to the code gate (`/code-review` plus the good-code
+agent) as to a plan gate: staged code goes to Russell for `git diff --staged` the instant it is staged,
+racing those agents, never waiting on them. A plan or a staged implementation sitting silently while
+Russell waits on a reviewer is the one failure this rule exists to prevent: keeping him fed always wins
+over handing him a pre-vetted artifact later.
 
 When he is free and more than one artifact is already waiting, pick in this order:
 1. One that has already **passed its reviewer agent** - pre-vetted, so his read is the last thing left.
@@ -211,8 +214,10 @@ reviewer has passed and Russell has approved:
 
 Feedback from either side loops back to the **same lane subagent**, which revises with its full drafting
 context intact. An approved plan unlocks that lane's implementation. The implemented optimized code
-passes one more gate - `/code-review` plus the good-code agent, raced against Russell - before the
-complexity step.
+passes one more gate - `/code-review` plus the good-code agent - and it is the same race: the instant the
+code is staged, it goes to Russell for `git diff --staged` while those agents run against it in parallel.
+His look never waits for them to finish; they and he review the staged code at once, and only the
+implementation-to-complexity step waits for both to clear.
 
 **The gate is a hard stop, not a status check.** A reviewer-agent PASS means the plan is pre-vetted for
 Russell to look at - it is a separate signal from his review, and earns its own word, "cleared review."
@@ -234,8 +239,10 @@ file, and fill both in there. Source (`bruteSolve`, `solve`) and test infrastruc
 Whenever an implementation - brute, optimized, harness, or the locked fixtures - is ready for Russell to
 look at, write it to its file (source changes in `rep.js`, test changes in `rep.test.js`) and `git add`
 it; say only that it's staged and ready, and never paste code into the console. Russell reviews with
-`git diff --staged`. His approval is what turns the staged state into a commit - `git commit` is the
-record of his sign-off, made right after he gives it, not something that happens on its own. A revision
+`git diff --staged`, and any code-review agents for that implementation fire the moment it is staged, in
+parallel with his look - his `git diff --staged` never waits for those agents to return. His approval is
+what turns the staged state into a commit - `git commit` is the record of his sign-off, made right after
+he gives it, not something that happens on its own. A revision
 after feedback goes back to `git add`, staged again, for another `git diff --staged` look.
 
 ### Verification chain (the load-bearing part)
