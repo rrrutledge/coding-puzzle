@@ -24,4 +24,13 @@ Each rule added here carries a **Check** naming the surface forms that usually m
 checker applies the Check as evidence, not as the rule itself: a listed form is not automatically a
 violation, and a real violation using none of the listed forms is still a violation.
 
-_(No rules yet - the first reps fill this in. Until then, judge against the purpose stated above.)_
+1. **Preserve the input.** The plan does not mutate the input in place unless the problem's contract
+   requires the result to land in that same structure (e.g. Merge Sorted Array's in-place merge into
+   `nums1`). Default to reading, never writing, the input.
+   **Check:** the plan sorts, splices, or reassigns into the input array/object/list with no copy step
+   named, and the problem statement never asked for an in-place result.
+2. **Name the boundary handling.** The optimized plan states what happens on invalid or edge input -
+   `k` outside `[1, n]`, an empty collection, `k = 0` - not just the happy path. This is part of the
+   approach, not deferred to implementation.
+   **Check:** the plan has no line addressing `k`'s bounds (for a selection problem) or the
+   empty/single-element case, despite the clarify step having raised it.

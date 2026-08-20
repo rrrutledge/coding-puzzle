@@ -26,4 +26,11 @@ Each rule added here carries a **Check** naming the surface forms that usually m
 checker applies the Check as evidence, not as the rule itself: a listed form is not automatically a
 violation, and a real violation using none of the listed forms is still a violation.
 
-_(No rules yet - the first reps fill this in. Until then, judge against the purpose stated above.)_
+1. **No input mutation.** The optimized (and brute) solution does not mutate its input parameters unless
+   the problem's contract requires the result in that same structure. Copy before sorting or modifying.
+   **Check:** an in-place `.sort()`/`.splice()`/`.reverse()` on a parameter, or a reassignment into a
+   passed-in object/array, with no corresponding requirement in the problem statement.
+2. **Validate the boundaries the plan named.** If the approved plan calls out `k` bounds, empty input, or
+   another edge case, the code actually handles it - not just the happy path the examples show.
+   **Check:** the plan names a boundary (e.g. `k` outside `[1, n]`) but the code has no corresponding
+   check or branch, so that input would silently misbehave rather than being handled as planned.
