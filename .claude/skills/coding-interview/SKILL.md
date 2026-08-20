@@ -1,56 +1,262 @@
 ---
 name: coding-interview
-description: Live-pairing workflow for solving one algorithmic problem out loud with an interviewer watching — clarify, brute force, optimize, cross-validate, state complexity. Use for any coding problem in this folder.
+description: Live-pairing workflow for solving one algorithmic problem out loud with an interviewer watching. You orchestrate; Russell clarifies, reviews, narrates, and verifies. Clarify-first, then four parallel plan-and-implement lanes, a reviewer-agent-races-Russell gate on each, and a brute-force oracle cross-check that carries the real signal. Use for any coding problem in this folder.
 ---
 
-# Coding interview pairing loop
+# Coding interview loop - one problem, orchestrated
 
-The grade here is not the final answer — it's how correctness gets verified in the open. Every step
-below produces something Russell narrates; none of it replaces his judgment.
+The grade is not the final code. It is how correctness gets established in the open: the clarifying
+questions, the brute-force oracle, the cross-check that could catch a wrong answer, and the complexity
+call said out loud. You produce the artifacts; Russell narrates and owns every one of them.
 
-## 1. Clarify (before any code)
+Language is JavaScript, tested with Node's built-in runner (`node --test`) and `node:assert`. No
+frameworks.
 
-Restate the problem in one or two sentences and ask 1-3 sharp clarifying questions: input size and
-shape, duplicates allowed, sorted or not, mutation allowed, tie-breaking rules, what "k" means at the
-boundaries (k=0, k=n). Wait for Russell's answer before writing anything. Keep this short — seconds,
-not a paragraph.
+## Your role: orchestrate, keep Russell fed
 
-## 2. Brute force first
+You are the orchestrator in the one tab Russell drives. You fan the work out to background subagents,
+run each review gate, and keep the single verification thread. Russell reviews and gives feedback only
+in this tab - never juggling windows - so his feedback lands the moment he gives it and you dispatch
+the next step without waiting.
 
-Write the obvious, unmistakably-correct solution first — sort-then-index, nested loops, whatever
-needs no cleverness to trust. Add 2-3 hardcoded example cases from the clarified problem and run
-them. This is the reference the optimized solution gets checked against, not a throwaway.
+The subagents do the drafting and reviewing in the background while the main tab stays free. Russell is
+never idle while you are heads-down, and you are never blocked waiting on him: his review of one
+artifact overlaps your building of the next.
 
-## 3. Optimized solution
+**Keep-fed priority - always hand Russell the next thing to look at in this order:**
+1. Something that has already **passed its reviewer agent** - a pre-vetted artifact.
+2. If nothing has cleared a reviewer yet, **anything that has been built** - better than letting him sit.
+When he gives feedback, dispatch it at once and surface the next queued item in the same breath.
 
-Write the better-complexity solution (heap of size k, Quickselect, two pointers, sliding window —
-whichever the problem calls for). While this generates, do not sit idle: name the target complexity
-out loud before the code lands, and say what you're about to check once it does.
+## The shape
 
-## 4. Cross-validate — the step that carries the actual signal
+Clarify first, then four lanes fan out, each gated, then a single verification chain, then document and
+complexity. The optimized lane is the critical path - lead with it. Node color is which model runs the
+box; every lane runs the same `plan -> reviewer agent ∥ you -> both clear?` race.
 
-Never assert the optimized solution is correct or optimal on its own say-so. Generate a batch of
-randomized inputs (varied sizes, edge sizes like empty/1-element, duplicates, negative numbers if
-applicable) and run both solutions against every input, asserting the outputs match. Report the
-result plainly: pass count, and the actual failing input plus both outputs if anything disagrees —
-never smooth over a mismatch or quietly patch it without flagging it first.
+```mermaid
+flowchart TD
+    subgraph Legend [node color = which model runs it]
+        direction LR
+        LO[Opus: orchestrate + optimized plan]:::opus
+        LS[Sonnet: other plans + impl + docs]:::sonnet
+        LH[Haiku: reviewer agents]:::haiku
+        LY[You: clarify + reviews]:::human
+        LM[Mechanical: gates + test runs]:::mech
+    end
 
-If a mismatch surfaces, stop and say so before touching code — that moment (catching a wrong or
-falsely-confident claim) is the one the interview is built to see.
+    S([Problem stated]) --> CQ{{Clarify: answer the questions<br/>that change the algorithm}}
 
-## 5. State complexity, then stop
+    CQ --> P3[Plan: optimized approach]
+    CQ --> P1[Plan: sample cases]
+    CQ --> P2[Plan: brute force]
+    CQ --> P4[Plan: cross-check harness]
 
-Time and space complexity for the optimized solution, one line, and the trade-off against the brute
-force and against any other viable approach (e.g. heap-of-size-k O(n log k) vs. Quickselect O(n)
-average / O(n²) worst vs. sort O(n log n) — say which you'd pick and why, usually k vs. n).
+    P3 --> A3[[reviewer agent]]
+    P3 --> Y3{{You review}}
+    A3 --> M3{both clear?}
+    Y3 --> M3
+    M3 -->|feedback| P3
+    M3 -->|approved| I3[Implement optimized]
 
-Do not add anything past this — no refactoring, no alternate implementations, no gold-plating. The
-loop ends at a verified, complexity-stated answer.
+    P1 --> A1[[reviewer agent]]
+    P1 --> Y1{{You review}}
+    A1 --> M1{both clear?}
+    Y1 --> M1
+    M1 -->|feedback| P1
+    M1 -->|approved| L1[Cases locked as fixtures]
+
+    P2 --> A2[[reviewer agent]]
+    P2 --> Y2{{You review}}
+    A2 --> M2{both clear?}
+    Y2 --> M2
+    M2 -->|feedback| P2
+    M2 -->|approved| I2[Implement brute oracle]
+
+    P4 --> A4[[reviewer agent]]
+    P4 --> Y4{{You review}}
+    A4 --> M4{both clear?}
+    Y4 --> M4
+    M4 -->|feedback| P4
+    M4 -->|approved| I4[Implement harness]
+
+    L1 --> V1[[Verify brute vs fixtures]]
+    I2 --> V1
+    V1 --> V2[[Cross-check optimized == brute]]
+    I3 --> V2
+    I4 --> V2
+    V2 --> E[Edge cases + fix loop]
+    I3 --> E
+    E --> D[Document: JSDoc on shipped solution]
+    D --> C([Complexity out loud + stop])
+
+    classDef opus fill:#c7d7f5,stroke:#3b5ba5,color:#000;
+    classDef sonnet fill:#cde7d8,stroke:#4a9d6a,color:#000;
+    classDef haiku fill:#e6d5f0,stroke:#9673a6,color:#000;
+    classDef human fill:#ffe0b3,stroke:#d79b00,color:#000;
+    classDef mech fill:#e8e8e8,stroke:#999999,color:#000;
+    class P3 opus;
+    class P1,P2,P4,I2,I3,I4,L1,D sonnet;
+    class A1,A2,A3,A4 haiku;
+    class CQ,Y1,Y2,Y3,Y4 human;
+    class M1,M2,M3,M4,V1,V2,E,S,C mech;
+```
+
+### 0. Clarify-first front gate
+
+Restate the problem in one or two sentences, then surface the **1-3 questions that change the
+algorithm** and get Russell's answers before any lane drafts: input size and shape, duplicates, sorted
+or not, mutation allowed, tie-breaking, what k means at the boundaries (k=0, k=n), negatives. Keep it to
+seconds. Writing the sample cases is itself part of clarifying - it forces the tie and boundary
+questions into the open.
+
+Because the algorithm-affecting facts are settled here, the four lanes are **forward-only and
+independent** - no routine cross-lane messaging once they launch.
+
+### The four lanes
+
+Every lane has the same shape: **plan -> review gate -> implement**. The plan *is* the pseudocode; there
+is no separate pseudocode artifact.
+
+**Spawn every lane subagent with the rubric its output will face, in its prompt** (`skills:` frontmatter,
+or the rubric file handed in to read), so the creator writes toward the exact bar the reviewer will
+apply and most drafts pass their gate the first time. The plan-drafter gets `good-pseudocode`; the
+implementer gets `good-code` for the brute and optimized solutions, `good-test` for the fixtures and the
+harness. Same file, both sides: the creator holds the reviewer's rubric.
+
+1. **Sample cases** - plan proposes a handful of hardcoded `input -> expected output` pairs, each
+   expected value worked out by hand. Once the gate clears, they lock as the test fixtures.
+2. **Brute force** - plan is the one-line obviously-correct approach (sort-then-index, nested loop).
+   Once implemented and verified it becomes the **oracle** for the cross-check. It is never presented as
+   the solution; its whole job is to be trustworthy.
+3. **Optimized solution** - plan is the approach and the "what are we optimizing" call (time vs space;
+   for a selection problem the k-vs-n choice among heap, quickselect, sort). **This is the critical
+   path.** Lead with it.
+4. **Cross-check harness** - plan is the random-input generator design (varied sizes, empty, one
+   element, duplicates, negatives, full k range). It depends only on the function signature, so it
+   proceeds alongside the optimized work.
+
+### The review gate (runs on every lane)
+
+The moment a lane's plan is drafted, open it for Russell **and** fire its reviewer agent at the same
+instant - a race. The gate waits for **both**:
+- Reviewer agent finishes first -> Russell reviews a pre-vetted plan.
+- Russell gets there first -> he starts before the agent lands, better than waiting.
+
+Feedback from either side loops back to the **same lane subagent**, which revises with its full drafting
+context intact. An approved plan unlocks that lane's implementation. The implemented optimized code
+passes one more gate - `/code-review` plus the good-code agent, raced against Russell - before the
+complexity step.
+
+### Verification chain (the load-bearing part)
+
+Gated on the implementations, run in order:
+
+1. **Brute vs hardcoded cases** - trust the oracle before leaning on it. Run the brute against every
+   locked fixture.
+2. **Cross-check: optimized === brute over many random inputs** - the step that carries the actual
+   signal. Never assert the optimized solution is correct on its own say-so. Report plainly: the pass
+   count, and on any disagreement the exact failing input and both outputs.
+3. **Edge cases + fix loop** - on any failure, **explain why before touching code.** Name what the
+   optimized approach missed, update the optimized plan to capture it, and only then fix. Catching a
+   wrong or falsely-confident result in the open is the moment the interview is built to see - never
+   smooth over a mismatch or quietly patch it.
+
+The template and worked example already wire this chain up (see Files below): a mismatch prints the
+failing input and both outputs, and the comparison is on the answer's invariant so a validly-different
+answer is not misread as a bug.
+
+### Document, then state complexity, then stop
+
+- **Document** - a JSDoc block on the shipped optimized solution: contract, params, return, and the
+  complexity line. The thing that ships is documented, not merely correct.
+- **State complexity out loud** - time and space for the optimized solution in one line, and the
+  tradeoff against the brute force and any other viable approach (heap-of-size-k O(n log k) vs
+  quickselect O(n) average / O(n^2) worst vs sort O(n log n)) - say which you would pick and why,
+  usually k vs n.
+- **Stop.** No refactoring, no alternate implementations, no gold-plating. The loop ends at a verified,
+  documented, complexity-stated answer.
+
+## Orchestration mechanics
+
+- **Regular (non-fork) subagents, resumed for feedback.** Spawn each lane as a regular background
+  subagent. When it finishes its draft it goes idle with its transcript on disk; feedback delivered via
+  `SendMessage` re-wakes it as a new turn with full prior context, so the revision keeps the reasoning
+  that produced the draft. Do not use forks here - a fork locks to the parent and cannot be resumed
+  this way.
+- **Give draft agents headroom.** A subagent that exhausts its turn or token budget goes terminal and
+  cannot be resumed. Spawn lane agents with enough headroom to survive until Russell's feedback arrives.
+- **Cross-lane messaging is a rare fallback.** Clarify-first makes the lanes independent, so the common
+  case needs no cross-lane routing. Only when a new clarification surfaces mid-review do you push it to
+  lanes that already drafted, via `SendMessage` (plain text, one lane at a time - there is no broadcast).
+  You, the orchestrator, hold the source-of-truth problem context.
+- **Concurrency headroom.** Up to 20 concurrent subagents, nesting 3 deep. Four lanes plus their
+  reviewers sit well inside that.
+
+## Model assignment
+
+Set per-subagent via the Agent tool's `model` option:
+- **Opus** - the orchestrator (this session) and the **optimized-approach plan**, where the algorithm
+  and the k-vs-n tradeoff matter most.
+- **Sonnet** - the other three plans, all implementations, and the documentation. The approved plan
+  constrains them, so a fast capable model is the right cost/speed point.
+- **Haiku** - the reviewer agents. They must win the race against Russell's manual review, so speed
+  wins and the rubric is tight enough for a small model. Bump a reviewer to Sonnet if its judgment
+  proves shallow.
+
+All picks are starting points; profile mode measures whether Opus on the optimized plan earns its cost
+over Sonnet.
+
+## Reviewer agents
+
+Each reviewer is a **cold, no-context** agent handed one artifact and one rubric, returning a binary
+**passes / has-issues** verdict with `rule + location + fix` rows. It stays cold by design - it needs
+only the artifact and the rubric, not the drafting conversation. The rubrics live in `rubrics/` and the
+lane subagents (the creators) hold the same files, so most drafts pass the first read.
+
+- **good-pseudocode** (`rubrics/good-pseudocode.md`) - reviews the lane plans, above all the optimized
+  approach.
+- **good-test** (`rubrics/good-test.md`) - reviews the sample fixtures and the cross-check harness.
+- **good-code** (`rubrics/good-code.md`) - reviews the implementations. For the code artifact the
+  built-in `/code-review` is the starting reviewer; the good-code rubric adds the interview-specific
+  checks `/code-review` does not weigh (plan-fidelity, input mutation, JSDoc-on-shipped, no gold-plating).
+
+To run one: dispatch a cold Agent, hand it the rubric file to read plus the artifact, and have it return
+the verdict. Profile each reviewer's time during practice and cut any that costs more than it saves.
+
+## Files
+
+- `templates/problem.test.js` - the per-problem template. Copy it to a working file and fill the four
+  slots: `bruteSolve`, `solve`, the fixtures, and `randomInput`. It already holds the seeded random
+  cross-check that asserts `solve === bruteSolve`, and an `equivalent(input, a, b)` seam for problems
+  whose answer is not unique.
+- `examples/top-k-frequent.test.js` - one fully worked instance (Top K Frequent Elements), runnable with
+  `node --test`. It shows the tie-aware `equivalent` that compares the frequency profile rather than the
+  raw elements, so two equally-correct selections are not flagged as a mismatch.
+- `rubrics/good-pseudocode.md`, `rubrics/good-test.md`, `rubrics/good-code.md` - the reviewer rubrics.
+
+## Profile mode vs real mode
+
+- **Profile mode (practice).** Timestamp each step - plan drafted, reviewer agent done, Russell's review
+  done, implementation done - and print an end-of-problem table: who was the bottleneck, how long each
+  reviewer took, where Russell waited, plus a token/cost tally per model. This tunes the fan-out, cuts
+  slow reviewers, and tests whether Opus on the optimized plan beats Sonnet.
+- **Real mode (interview).** No profiling overhead - just the loop.
+
+Default to real mode; switch to profile mode when Russell says he is doing a timed practice rep.
+
+### Rubric-learning loop (practice feeds the reviewers)
+
+During practice, when Russell's feedback is **generic** to how tests, plans, or code should be written
+(not specific to this problem), capture it as you go. At session end, fold it into the matching rubric
+in `rubrics/`, so next time the reviewer agent catches it and Russell does not have to. The aim is that
+Russell stops being the one catching recurring issues.
 
 ## Guardrails
 
-- One agent, one thread of work. No spawning subagents or parallel attempts on the same problem.
-- Small, reviewable diffs at each step — Russell reads and owns every change before the next step
-  starts, same as any other PR.
-- If Russell's own clarifying question or objection contradicts something already written, the code
+- The optimized solution is never asserted correct without the cross-check having run. A mismatch stops
+  the loop and gets explained before any code changes.
+- The brute force stays obviously-correct - it is the oracle, and a clever brute is a broken oracle.
+- Small, reviewable artifacts at each gate. Russell reads and owns every one before the next step.
+- If Russell's own clarifying question or objection contradicts something already drafted, the artifact
   changes, not his framing.
