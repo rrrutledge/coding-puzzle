@@ -123,7 +123,8 @@ independent** - no routine cross-lane messaging once they launch.
 ### The four lanes
 
 Every lane has the same shape: **plan -> review gate -> implement**. The plan *is* the pseudocode; there
-is no separate pseudocode artifact.
+is no separate pseudocode artifact. Every plan opens with a few sentences on the mental model - the
+intuition for why the approach works - before the steps; see `good-pseudocode.md`.
 
 **Spawn every lane subagent with the rubric its output will face, in its prompt** (`skills:` frontmatter,
 or the rubric file handed in to read), so the creator writes toward the exact bar the reviewer will
@@ -154,6 +155,17 @@ Feedback from either side loops back to the **same lane subagent**, which revise
 context intact. An approved plan unlocks that lane's implementation. The implemented optimized code
 passes one more gate - `/code-review` plus the good-code agent, raced against Russell - before the
 complexity step.
+
+**The gate is a hard stop, not a status check.** A reviewer-agent PASS is not Russell's review - it only
+means he's looking at a pre-vetted plan instead of a raw one. It unlocks nothing by itself. Implementation
+for a lane never launches until Russell has typed his own explicit approval of that specific plan, in his
+own words, in this conversation. The moment a plan is surfaced for his review, end your turn: take no
+further action on that lane - no implementation dispatch, no "proceeding since the reviewer agent cleared
+it" - until his next message actually addresses it. Never call a plan "approved," in a status update or
+to Russell himself, until his own words say so; a reviewer-agent PASS gets its own word ("cleared review"
+or similar) so the two are never conflated. If you catch yourself about to report "all plans approved"
+and Russell's own approval is missing for any one of them, stop and get it before implementation runs -
+same as any other guardrail violation, explain it before touching anything further.
 
 ### Verification chain (the load-bearing part)
 
@@ -265,5 +277,7 @@ Russell stops being the one catching recurring issues.
   the loop and gets explained before any code changes.
 - The brute force stays obviously-correct - it is the oracle, and a clever brute is a broken oracle.
 - Small, reviewable artifacts at each gate. Russell reads and owns every one before the next step.
+- A reviewer agent's PASS never substitutes for Russell's own approval. Implementation for a lane waits
+  for his explicit word on that plan - see "The gate is a hard stop" above.
 - If Russell's own clarifying question or objection contradicts something already drafted, the artifact
   changes, not his framing.
