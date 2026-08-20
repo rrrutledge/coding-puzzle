@@ -25,18 +25,24 @@ function equivalent(input, a, b) {
 }
 
 function deepEqualUnordered(a, b) {
+  let equal;
   if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length) {return false;}
-    const sa = [...a].map(String).sort();
-    const sb = [...b].map(String).sort();
-    return sa.every((v, i) => v === sb[i]);
+    if (a.length !== b.length) {
+      equal = false;
+    } else {
+      const sa = [...a].map(String).sort();
+      const sb = [...b].map(String).sort();
+      equal = sa.every((v, i) => v === sb[i]);
+    }
+  } else {
+    try {
+      assert.deepEqual(a, b);
+      equal = true;
+    } catch {
+      equal = false;
+    }
   }
-  try {
-    assert.deepEqual(a, b);
-    return true;
-  } catch {
-    return false;
-  }
+  return equal;
 }
 
 // ── Hardcoded fixtures: locked after the sample-cases gate ────────────────────

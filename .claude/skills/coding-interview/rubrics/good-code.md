@@ -54,3 +54,8 @@ is that evidence being absent, not the presence of some named bad pattern.
    it as a parameter instead of closing over it.
    **Check:** every `function`, arrow, or method lives at module scope; none is declared inside another
    function's body.
+6. **Single return, loops run to completion.** A function returns once, as its last statement - no
+   `return` partway through the body. A loop runs until its own condition goes false; nothing exits it
+   early with `break`. Where a loop or branch would otherwise short-circuit, track the result (or a flag)
+   in a variable and let the loop or function finish naturally instead.
+   **Check:** the function's only `return` is its final statement, and no loop body contains a `break`.

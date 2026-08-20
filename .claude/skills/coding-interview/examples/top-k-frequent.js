@@ -43,11 +43,14 @@ function topKFrequent(nums, k) {
   for (const [value, c] of counts) {buckets[c].push(value);}
 
   // Walk buckets from the highest count down, collecting values until we have k.
+  // Each inner loop still runs to its own end - once result is full it just stops
+  // pushing, rather than breaking out - so no bucket is exited early.
   const result = [];
   for (let c = buckets.length - 1; c >= 1 && result.length < k; c--) {
     for (const value of buckets[c]) {
-      if (result.length === k) {break;}
-      result.push(value);
+      if (result.length < k) {
+        result.push(value);
+      }
     }
   }
   return result;
