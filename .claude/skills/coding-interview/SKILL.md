@@ -39,17 +39,29 @@ artifact overlaps your building of the next.
 - lanes keep drafting, reviewer agents keep running - silently. Show him exactly one artifact, ask him to
 review it, then wait: the next thing that prints is his reply, or the revision built from his feedback for
 another look. Once that item is resolved, hand him the next thing - always one artifact, always the one
-currently in front of him. Anything else that clears its reviewer agent while he's mid-review joins the
-queue silently and waits its turn. When he's free, hand him the next thing in this order:
-1. Something that has already **passed its reviewer agent** - a pre-vetted artifact.
-2. If nothing has cleared a reviewer yet, **anything that has been built** - better than letting him sit.
-Label what you hand him (which lane, which revision) so it's unambiguous.
+currently in front of him. Label what you hand him (which lane, which revision) so it's unambiguous.
+
+**An artifact is ready for him the instant it is drafted, not when its reviewer clears.** The reviewer
+agent and Russell review the same plan in parallel (see the race below), so surfacing to him is never
+held back for a reviewer to finish. The moment the first plan drafts and he is free, hand it over - even
+with its reviewer still running. A drafted plan sitting silently while Russell waits on a reviewer is the
+one failure this rule exists to prevent: keeping him fed always wins over handing him a pre-vetted plan
+later.
+
+When he is free and more than one artifact is already waiting, pick in this order:
+1. One that has already **passed its reviewer agent** - pre-vetted, so his read is the last thing left.
+2. Otherwise **anything already drafted**, reviewer still running or not - never wait for a pending
+   reviewer when something built is sitting there.
+Everything else waits silently in the queue, and its turn comes when he frees up.
 
 ## The shape
 
 Clarify first, then four lanes fan out, each gated, then a single verification chain, then document and
-complexity. The optimized lane is the critical path - lead with it. Node color is which model runs the
-box; every lane runs the same `plan -> reviewer agent ∥ you -> both clear?` race.
+complexity. The optimized lane is the critical path - dispatch it first and keep its progress the
+priority. That is the lane's precedence, not a rule about Russell's review order: whichever plan drafts
+first is the one he sees first, and a ready plan is never held back to make the optimized one his first
+review. Node color is which model runs the box; every lane runs the same
+`plan -> reviewer agent ∥ you -> both clear?` race.
 
 ```mermaid
 flowchart TD
@@ -155,7 +167,9 @@ harness. Same file, both sides: the creator holds the reviewer's rubric.
    the solution; its whole job is to be trustworthy. Lands in the working **source** file.
 3. **Optimized solution** - plan is the approach and the "what are we optimizing" call (time vs space;
    for a selection problem the k-vs-n choice among heap, quickselect, sort). **This is the critical
-   path.** Lead with it. Lands in the working **source** file, alongside the brute reference.
+   path** - dispatch it first and prioritize its progress, but never withhold a faster-drafting plan
+   from Russell to make this one his first review. Lands in the working **source** file, alongside the
+   brute reference.
 4. **Cross-check harness** - plan is the fast-check `inputArbitrary` design (varied sizes, empty, one
    element, duplicates, negatives, full k range) - composed from fast-check's arbitraries, not a
    hand-rolled generator; see `examples/top-k-frequent.test.js`. It depends only on the function
@@ -164,9 +178,12 @@ harness. Same file, both sides: the creator holds the reviewer's rubric.
 ### The review gate (runs on every lane)
 
 The moment a lane's plan is drafted, open it for Russell **and** fire its reviewer agent at the same
-instant - a race. The gate waits for **both**:
-- Reviewer agent finishes first -> Russell reviews a pre-vetted plan.
-- Russell gets there first -> he starts before the agent lands, better than waiting.
+instant - a genuine race, both looking at the same plan at once. Surfacing the plan to Russell is never
+delayed for the reviewer to return; his look starts as soon as he is free, whatever the reviewer is doing.
+What waits for **both** to clear is the implementation gate - the plan does not unlock its code until the
+reviewer has passed and Russell has approved:
+- Reviewer agent finishes first -> the plan Russell is already reading is now also pre-vetted.
+- Russell gets there first -> he reviews before the agent lands, rather than sitting idle.
 
 Feedback from either side loops back to the **same lane subagent**, which revises with its full drafting
 context intact. An approved plan unlocks that lane's implementation. The implemented optimized code
