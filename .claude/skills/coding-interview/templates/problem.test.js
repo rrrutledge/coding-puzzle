@@ -42,24 +42,20 @@ function deepEqualUnordered(a, b) {
 // ── Hardcoded fixtures: locked after the sample-cases gate ────────────────────
 // Each expected value is worked out by hand from the statement, never copied from
 // a solution's output. Span the clarified boundaries: empty, single, dupes, ties,
-// k=0 and k=n, negatives.
-const FIXTURES = [
-  // { name: 'empty',  input: [[], 0],       expected: [] },
-  // { name: 'single', input: [[5], 1],      expected: [5] },
-];
-
-for (const f of FIXTURES) {
-  test(`fixture: ${f.name}`, () => {
-    assert.ok(
-      equivalent(f.input, bruteSolve(...f.input), f.expected),
-      `brute disagrees with fixture "${f.name}"`,
-    );
-    assert.ok(
-      equivalent(f.input, solve(...f.input), f.expected),
-      `optimized disagrees with fixture "${f.name}"`,
-    );
-  });
+// k=0 and k=n, negatives. Reviewed as a table during the sample-cases gate, but
+// written below as one test() call per fixture rather than a loop over the table -
+// a GUI test explorer can only find and click-run a literally-named test() call,
+// not one generated dynamically inside a loop.
+// eslint-disable-next-line no-unused-vars -- stub; used once test() calls are added below
+function checkFixture(name, input, expected) {
+  assert.ok(equivalent(input, bruteSolve(...input), expected), `brute disagrees with fixture "${name}"`);
+  assert.ok(equivalent(input, solve(...input), expected), `optimized disagrees with fixture "${name}"`);
+  console.log(`fixture "${name}": ${JSON.stringify(input)} -> ${JSON.stringify(expected)}`);
 }
+
+// TODO: one test() per locked fixture, e.g.:
+// test('fixture: empty', () => checkFixture('empty', [[], 0], []));
+// test('fixture: single', () => checkFixture('single', [[5], 1], [5]));
 
 // ── Random input generator ────────────────────────────────────────────────────
 // Deliberately reaches the edge dimensions: sometimes empty, sometimes one
@@ -96,4 +92,5 @@ test('cross-check: optimized matches brute on random inputs', () => {
         `  brute:     ${JSON.stringify(want)}`,
     );
   }
+  console.log(`cross-check: ${TRIALS} trials, 0 mismatches`);
 });

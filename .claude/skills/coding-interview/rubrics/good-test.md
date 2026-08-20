@@ -27,4 +27,21 @@ checker looks for that form as evidence, not as the rule itself: finding it is a
 automatic proof, and a rule can be satisfied through a form the Check doesn't name. What flags a violation
 is that evidence being absent, not the presence of some named bad pattern.
 
-_(No rules yet - the first reps fill this in. Until then, judge against the purpose stated above.)_
+1. **Every test prints what it did.** A green checkmark alone doesn't distinguish a real pass from a
+   no-op. Each `test()` body logs at least one line summarizing what it actually validated - the fixture's
+   input and expected output, or the cross-check's trial count - before returning.
+   **Check:** each `test()` body contains a `console.log` (or equivalent) naming the case it ran (a
+   fixture's input, or the trial count for the cross-check).
+2. **Fixtures and the cross-check both ship.** The hand-derived fixtures from the sample-cases lane and
+   the random cross-check are two different kinds of coverage, not stand-ins for each other, and both
+   stay in the final test file once both lanes land - the fast, eyeballable fixtures for a quick run, the
+   slower randomized suite for the load-bearing check.
+   **Check:** the test file has at least one `test('fixture: ...', ...)` call per locked fixture and the
+   `cross-check` test.
+3. **Fixtures are individual `test()` calls, not loop-generated.** The locked fixtures are reviewed as a
+   data table during the sample-cases gate, but land in the file as one explicit, literally-named
+   `test()` call per fixture - never a `for`/`forEach` loop registering them dynamically. A GUI test
+   explorer can only find and click-run a test whose name it can see in the source; a name built at
+   runtime inside a loop is invisible to it even though `node --test` itself runs it fine.
+   **Check:** each fixture has its own `test('fixture: <name>', ...)` call written out in the file, with
+   the assertion logic factored into a shared top-level helper if it repeats.

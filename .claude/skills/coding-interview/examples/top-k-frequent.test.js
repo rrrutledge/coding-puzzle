@@ -42,28 +42,24 @@ function frequencyProfile(sel, counts) {
 }
 
 // ── Hardcoded fixtures: derived by hand from the statement ────────────────────
-const FIXTURES = [
-  { name: 'typical', input: [[1, 1, 1, 2, 2, 3], 2], expected: [1, 2] },
-  { name: 'k = distinct (return all)', input: [[4, 5, 6], 3], expected: [4, 5, 6] },
-  { name: 'empty, k=0', input: [[], 0], expected: [] },
-  { name: 'single element', input: [[7], 1], expected: [7] },
-  { name: 'all duplicates', input: [[9, 9, 9], 1], expected: [9] },
-  { name: 'negatives', input: [[-1, -1, -2, -2, -2, 3], 2], expected: [-2, -1] },
-  { name: 'tie at boundary (either is valid)', input: [[1, 2], 1], expected: [1] },
-];
-
-for (const f of FIXTURES) {
-  test(`fixture: ${f.name}`, () => {
-    assert.ok(
-      equivalent(f.input, bruteTopK(...f.input), f.expected),
-      `brute disagrees with fixture "${f.name}"`,
-    );
-    assert.ok(
-      equivalent(f.input, topKFrequent(...f.input), f.expected),
-      `optimized disagrees with fixture "${f.name}"`,
-    );
-  });
+// One test() call per fixture, not a loop - a GUI test explorer can only find and
+// click-run a literally-named test() call, not one generated dynamically.
+function checkFixture(name, input, expected) {
+  assert.ok(equivalent(input, bruteTopK(...input), expected), `brute disagrees with fixture "${name}"`);
+  assert.ok(equivalent(input, topKFrequent(...input), expected), `optimized disagrees with fixture "${name}"`);
+  console.log(`fixture "${name}": ${JSON.stringify(input)} -> ${JSON.stringify(expected)}`);
 }
+
+test('fixture: typical', () => checkFixture('typical', [[1, 1, 1, 2, 2, 3], 2], [1, 2]));
+test('fixture: k = distinct (return all)', () =>
+  checkFixture('k = distinct (return all)', [[4, 5, 6], 3], [4, 5, 6]));
+test('fixture: empty, k=0', () => checkFixture('empty, k=0', [[], 0], []));
+test('fixture: single element', () => checkFixture('single element', [[7], 1], [7]));
+test('fixture: all duplicates', () => checkFixture('all duplicates', [[9, 9, 9], 1], [9]));
+test('fixture: negatives', () =>
+  checkFixture('negatives', [[-1, -1, -2, -2, -2, 3], 2], [-2, -1]));
+test('fixture: tie at boundary (either is valid)', () =>
+  checkFixture('tie at boundary (either is valid)', [[1, 2], 1], [1]));
 
 // ── Random input generator: spans the edge dimensions ─────────────────────────
 // Small value pool forces frequent duplicates and ties; length reaches 0 and 1;
@@ -103,4 +99,5 @@ test('cross-check: optimized matches brute on random inputs', () => {
         `  brute:     ${JSON.stringify(want)}`,
     );
   }
+  console.log(`cross-check: ${TRIALS} trials, 0 mismatches`);
 });
