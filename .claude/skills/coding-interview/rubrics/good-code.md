@@ -42,3 +42,10 @@ is that evidence being absent, not the presence of some named bad pattern.
    and follow the algorithm before reading any code.
    **Check:** every blank-line-delimited group of statements in the function carries a comment on the
    line immediately above it, naming what that group does.
+4. **Functional for single-pass glue, loops for the core algorithm.** A lone `.map()`/`.filter()`/
+   `.reduce()` call is fine when it is genuinely one pass over the data. The core optimized step - the
+   part that makes the complexity what it is (two-pointer, sliding window, in-place partition, heap) - is
+   an explicit loop with local mutable state, since precise control over passes and allocations is what
+   makes it optimal.
+   **Check:** each functional array-method call stands on its own rather than feeding directly into
+   another `.map()`/`.filter()`/`.reduce()`, and the core optimized step is written as an explicit loop.
