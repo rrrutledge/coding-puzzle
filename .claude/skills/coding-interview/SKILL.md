@@ -118,6 +118,12 @@ independent** - no routine cross-lane messaging once they launch.
 Every lane has the same shape: **plan -> review gate -> implement**. The plan *is* the pseudocode; there
 is no separate pseudocode artifact.
 
+**Spawn every lane subagent with the rubric its output will face, in its prompt** (`skills:` frontmatter,
+or the rubric file handed in to read), so the creator writes toward the exact bar the reviewer will
+apply and most drafts pass their gate the first time. The plan-drafter gets `good-pseudocode`; the
+implementer gets `good-code` for the brute and optimized solutions, `good-test` for the fixtures and the
+harness. Same file, both sides: the creator holds the reviewer's rubric.
+
 1. **Sample cases** - plan proposes a handful of hardcoded `input -> expected output` pairs, each
    expected value worked out by hand. Once the gate clears, they lock as the test fixtures.
 2. **Brute force** - plan is the one-line obviously-correct approach (sort-then-index, nested loop).
