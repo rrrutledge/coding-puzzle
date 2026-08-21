@@ -82,6 +82,12 @@ test('fixture: throws-non-array-element', () =>
   checkThrows('throws-non-array-element', [[[1, 2], 'bad']], TypeError));
 test('fixture: throws-non-integer', () =>
   checkThrows('throws-non-integer', [[[1, 2], [1.5]]], TypeError));
+// Regression fixture for the .every()-skips-holes validation bug fixed in solution.js.
+test('fixture: throws-sparse-array', () => {
+  // eslint-disable-next-line no-sparse-arrays -- intentional hole is the point of this fixture
+  const lists = [[1, , 3], [2]];
+  checkThrows('throws-sparse-array', [lists], TypeError);
+});
 
 // ── Random input generator ────────────────────────────────────────────────────
 // fast-check, not a hand-rolled PRNG - it already biases toward edge cases
