@@ -13,7 +13,20 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fc = require('fast-check');
-const { topKFrequent, bruteTopK } = require('./top-k-frequent');
+const { topKFrequent } = require('./top-k-frequent');
+
+// ── Brute reference: the oracle (test-only, never shipped) ────────────────────
+// Count, sort the distinct values by count descending, and take the first k.
+// Plainly correct; O(n + m log m) where m is the distinct count. It lives here,
+// not in the source file, because it is only ever used by these tests, and it
+// runs on well-typed input alone (the cross-check only feeds good input), so it
+// does no input validation.
+function bruteTopK(nums, k) {
+  const counts = nums.reduce((m, n) => m.set(n, (m.get(n) ?? 0) + 1), new Map());
+  return [...counts.keys()]
+    .sort((a, b) => counts.get(b) - counts.get(a))
+    .slice(0, k);
+}
 
 // ── Equivalence: both outputs valid answers for this input? ───────────────────
 // Two selections are both correct iff they pick the same multiset of frequencies -
@@ -46,7 +59,6 @@ function frequencyProfile(sel, counts) {
 // One test() call per fixture, not a loop - a GUI test explorer can only find and
 // click-run a literally-named test() call, not one generated dynamically.
 function checkFixture(name, input, expected) {
-  assert.ok(equivalent(input, bruteTopK(...input), expected), `brute disagrees with fixture "${name}"`);
   assert.ok(equivalent(input, topKFrequent(...input), expected), `optimized disagrees with fixture "${name}"`);
   console.log(`fixture "${name}": ${JSON.stringify(input)} -> ${JSON.stringify(expected)}`);
 }
@@ -54,7 +66,6 @@ function checkFixture(name, input, expected) {
 // A boundary fixture whose expected behavior is rejection - the wrong type
 // entirely, not just a wrong value. See good-test.md rule 4.
 function checkThrows(name, input, ErrorType) {
-  assert.throws(() => bruteTopK(...input), ErrorType, `brute should reject fixture "${name}"`);
   assert.throws(() => topKFrequent(...input), ErrorType, `optimized should reject fixture "${name}"`);
   console.log(`fixture "${name}": ${JSON.stringify(input)} -> throws ${ErrorType.name}`);
 }

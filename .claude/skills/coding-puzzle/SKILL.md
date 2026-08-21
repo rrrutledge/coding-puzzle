@@ -55,12 +55,12 @@ partner's own message names several artifacts at once, you still hand back exact
 order below - and keep the rest queued.
 
 **An artifact is ready for them the instant it exists, not when its reviewer clears.** This holds for
-every artifact they review - a drafted plan and a staged implementation alike. The reviewer agents and
+every artifact they review - a drafted plan and a pushed implementation alike. The reviewer agents and
 your partner review the same artifact in parallel (see the race below), so surfacing to them is never held
-back for a reviewer to finish. The moment a plan drafts or code is staged and they are free, hand it over -
+back for a reviewer to finish. The moment a plan drafts or code is pushed and they are free, hand it over -
 even with its reviewer still running. This applies as much to the code gate (`/code-review` plus the
-good-code agent) as to a plan gate: staged code goes to your partner for `git diff --staged` the instant it
-is staged, racing those agents, never waiting on them. A plan or a staged implementation sitting silently
+good-code agent) as to a plan gate: pushed code goes to your partner in the PR the instant it is pushed,
+racing those agents, never waiting on them. A plan or a pushed implementation sitting silently
 while your partner waits on a reviewer is the one failure this rule exists to prevent: keeping them fed
 always wins over handing them a pre-vetted artifact later.
 
@@ -73,8 +73,9 @@ Everything else waits silently in the queue, and its turn comes when they free u
 **Handing them an artifact means putting its content in front of them, in the same message that yields.**
 Yielding to your partner and the thing they are to review arrive together, never one without the other. A
 plan is handed over by showing its text - the mental model and the steps - right here in the tab, so they
-read and react to it without asking for it. Code is handed over by staging it and pointing them at
-`git diff --staged` (the staged diff is the thing in front of them; never paste code into the console).
+read and react to it without asking for it. Code is handed over by committing it, pushing, and pointing
+them at the PR's Files Changed (the pushed diff is the thing in front of them; never paste code into the
+console).
 Naming that a plan or a set of test cases is "queued" or "available to look at" without showing it is not
 handing it over - it leaves them to go fetch what should already be on the page. And hand over one item -
 the single one chosen by the order above - not a menu of two or three "look at whichever you want"; the
@@ -111,12 +112,12 @@ pings back mid-review.
 the trigger to feed them the next thing, and they are already waiting on it, so the next ready artifact
 (chosen by the order above) is the first thing the response emits: its label and its content, right at the
 top, before anything else. Their feedback still gets routed to its lane, an approved implementation still
-launches, an approved staged diff still gets committed - but those ride as silent tool calls after the
+launches, a revision still gets committed and pushed - but those ride as silent tool calls after the
 hand-off text, where they produce no printed output in their turn and add nothing to the wait before they
 see the artifact. What must never come first is generated prose that delays the artifact: a recap of their
 feedback, a note on what you are about to do with it, a status line on the other lanes. The hand-off
 echoes an artifact already in hand rather than composing one fresh, so it stays short - one line naming
-the lane and revision, then the plan's model and steps or the staged-diff pointer, and stop. This is the
+the lane and revision, then the plan's model and steps or the PR pointer, and stop. This is the
 fast path for the stall your partner feels: something is already vetted and waiting, and only orchestrator
 overhead sits between their reply and seeing it.
 
@@ -233,14 +234,17 @@ harness. Same file, both sides: the creator holds the reviewer's rubric.
 1. **Sample cases** - plan proposes a handful of hardcoded `input -> expected output` pairs, each
    expected value worked out by hand. Once the gate clears, they lock as the test fixtures, in the
    working **test** file.
-2. **Brute force** - plan is the one-line obviously-correct approach (sort-then-index, nested loop).
-   Once implemented and verified it becomes the **oracle** for the cross-check. It is never presented as
-   the solution; its whole job is to be trustworthy. Lands in the working **source** file.
+2. **Brute force** - plan is the one-line obviously-correct approach (sort-then-index, or a plain
+   `map`/`filter`/`reduce` chain). Once implemented and verified it becomes the **oracle** for the
+   cross-check. It is never presented as the solution; its whole job is to be trustworthy, so it
+   maximizes clarity with functional constructs and built-ins (good-code rule 9). Lands in the working
+   **test** file - the brute is test-only, so it lives beside the fixtures and cross-check, never in the
+   shipped source.
 3. **Optimized solution** - plan is the approach and the "what are we optimizing" call (time vs space;
    for a selection problem the k-vs-n choice among heap, quickselect, sort). **This is the critical
    path** - dispatch it first and prioritize its progress, but never withhold a faster-drafting plan
-   from your partner to make this one their first review. Lands in the working **source** file, alongside
-   the brute reference.
+   from your partner to make this one their first review. Lands in the working **source** file - the
+   shipped artifact, with its `validateInput` guard.
 4. **Cross-check harness** - plan is the fast-check `inputArbitrary` design (varied sizes, empty, one
    element, duplicates, negatives, full k range) - composed from fast-check's arbitraries, not a
    hand-rolled generator; see `examples/top-k-frequent.test.js`. It depends only on the function
@@ -279,8 +283,8 @@ the reviewer is doing.
 Feedback from either side loops back to the **same lane subagent**, which revises with its full drafting
 context intact. An approved plan unlocks that lane's implementation. The implemented optimized code
 passes one more gate - `/code-review` plus the good-code agent - and it is the same race: the instant the
-code is staged, it goes to your partner for `git diff --staged` while those agents run against it in
-parallel. Their look never waits for them to finish; they and your partner review the staged code at once,
+code is committed and pushed, it goes to your partner in the PR while those agents run against it in
+parallel. Their look never waits for them to finish; they and your partner review the pushed code at once,
 and only the implementation-to-complexity step waits for both to clear.
 
 **The gate is a hard stop, not a status check.** A reviewer-agent PASS means the plan is pre-vetted for
@@ -291,30 +295,51 @@ review, end your turn there and wait; the next thing that happens on that lane i
 reporting a set of plans as approved, confirm each one actually carries your partner's own word for it -
 that check is the standing precondition for implementation, same as any other gate in this loop.
 
-### Code review happens through git, never the console
+### Code review happens in a draft PR, never the console
 
-At the start of a rep, create a local scratch branch off `main` for the rep's working files (e.g.
-`rep/<slug>`) - never pushed, never merged; it exists only so this rep's code has somewhere to live and
-diff against. Copy `templates/problem.js` and `templates/problem.test.js` to a matched pair of working
-files on that branch (e.g. `rep.js` and `rep.test.js`), point the test file's `require` at the source
-file, and fill both in there. Source (`bruteSolve`, `solve`) and test infrastructure (fixtures,
-`equivalent`, the fast-check harness) stay in their own files - never merged into one.
+At the start of a rep, branch off `main` for real: `git fetch origin main`, then
+`git checkout -b solutions/<slug> origin/main`. Author the solution directly in the files that ship -
+`solutions/<slug>/solution.js` (the `solve` optimized solution and its `validateInput` guard) and
+`solutions/<slug>/solution.test.js` (the `bruteSolve` oracle, the fixtures, the `equivalent` seam, the
+fast-check cross-check). The brute is test-only - it exists only to verify `solve`, so it lives in the
+test file, never in the shipped source, and it runs on well-typed input alone, so it does no validation.
+The fixtures call `solve` directly (the production code), and the cross-check feeds well-typed random
+inputs through both solutions. The test imports only `solve`; nothing flows the other way. The files you
+build in are the ones that ship. Seed them from `templates/problem.js` and `templates/problem.test.js`
+for the split source/test scaffolding and the helpers, and point the test file's `require` at
+`./solution`. The shipped source (`solve`, `validateInput`) and the test-only oracle plus infrastructure
+(`bruteSolve`, fixtures, `equivalent`, the fast-check harness) stay in their own files, never merged into
+one. The template is a reference to build from, not a file to carry forward verbatim: its commented-out
+cross-check block shows the shape, and you write the real one in live, so a commented-out cross-check
+never reaches the solution file (see `good-test.md`).
 
-Whenever an implementation - brute, optimized, harness, or the locked fixtures - is ready for your
-partner to look at, write it to its file (source changes in `rep.js`, test changes in `rep.test.js`) and
-`git add` it; say only that it's staged and ready, and never paste code into the console. Your partner
-reviews with `git diff --staged`, and any code-review agents for that implementation fire the moment it is
-staged, in parallel with their look - their `git diff --staged` never waits for those agents to return.
-Their approval is what turns the staged state into a commit - `git commit` is the record of their sign-off,
-made right after they give it, not something that happens on its own. A revision after feedback goes back
-to `git add`, staged again, for another `git diff --staged` look.
+Open a **draft PR early**, the moment the branch has its seeded files, so your partner has one stable
+review surface for the whole rep: push the branch and `gh pr create --draft`. Restate the PR link every
+time you push to it.
+
+Whenever an implementation - brute, optimized, harness, or the locked fixtures - is ready for your partner
+to look at, **commit it and push** (source in `solution.js`, tests in `solution.test.js`), then hand them
+the PR: say what changed in a line and point them at Files Changed. Everything they review is committed
+before they see it, so there is always a real diff to read and a prior commit to diff against - they read
+the whole change on Files Changed and the newest commit on its own for the diff since their last look, and
+leave line comments where they want them. The code-review agents for that implementation fire the moment
+it is pushed, in parallel with their look - their read never waits for them. Never paste code into the
+console; the PR is the review surface.
+
+Their feedback - narrated here in the tab, or left as line comments on the PR (pull those with
+`gh pr view <n> --comments` when they leave them there) - goes back to the same lane subagent, which
+revises. The revision is a **new commit, pushed**, so their next look is the incremental diff sitting on
+top of what they already saw. Commits accumulate on the branch as the running record of the rep; their
+approval is their word here or on the PR, and the merge at the close is the final sign-off - a commit is a
+reviewable checkpoint, not their sign-off on its own.
 
 ### Verification chain (the load-bearing part)
 
 Gated on the implementations, run in order:
 
-1. **Brute vs hardcoded cases** - trust the oracle before leaning on it. Run the brute against every
-   locked fixture.
+1. **The shipped solution vs the hand-derived fixtures** - run `solve` against every locked fixture,
+   pinning the production code to values worked out by hand. The oracle is trusted by being obviously
+   correct (its own review), not by a fixture pass, so the fixtures call `solve` directly, not the brute.
 2. **Cross-check: optimized === brute over many random inputs** - the step that carries the actual
    signal. Never assert the optimized solution is correct on its own say-so. Report plainly: the pass
    count, and on any disagreement the exact failing input and both outputs.
@@ -338,8 +363,20 @@ one-line summary of what it actually ran, so a pass is never ambiguous with a no
   tradeoff against the brute force and any other viable approach (heap-of-size-k O(n log k) vs
   quickselect O(n) average / O(n^2) worst vs sort O(n log n)) - say which you would pick and why,
   usually k vs n.
-- **Stop.** No refactoring, no alternate implementations, no gold-plating. The loop ends at a verified,
-  documented, complexity-stated answer.
+- **Stop.** No refactoring, no alternate implementations, no gold-plating. The solving ends at a verified,
+  documented, complexity-stated answer - then close the rep as its own step, below.
+
+### Close the rep like a real change
+
+The solution files are already in the draft PR - built there, reviewed there. Closing the rep is the last
+step: add the write-up, then ship it the way any change in this repo ships.
+
+1. **Write up `solutions/<slug>/README.md`** from the repo-root `solutions/TEMPLATE.md`: Problem,
+   Approach, Complexity, Verification, and Code, filled from this rep. `solutions/k-closest-points/` is a
+   worked instance to match. Commit and push it to the PR.
+2. **Mark the PR ready and merge.** `gh pr ready`, then your partner reads the full write-up on Files
+   Changed, and the PR merges on their go-ahead. The whole rep lives in that one `solutions/<slug>` PR,
+   and merging it is what closes the rep.
 
 ## Orchestration mechanics
 
@@ -392,10 +429,12 @@ the verdict. Profile each reviewer's time during practice and cut any that costs
 ## Files
 
 - `templates/problem.js` + `templates/problem.test.js` - the per-problem template, split source from
-  test. Copy both to a matched working pair and fill in: `bruteSolve` and `solve` in the `.js` file, the
-  fixtures and a fast-check `inputArbitrary` in the `.test.js` file. The test file already holds the
-  fast-check cross-check that asserts `solve === bruteSolve`, and an `equivalent(input, a, b)` seam for
-  problems whose answer is not unique.
+  test. Seed a matched working pair from them and fill in: `validateInput` and `solve` in the `.js` file
+  (the shipped source); the `bruteSolve` oracle, the fixtures, and a fast-check `inputArbitrary` in the
+  `.test.js` file. The brute is test-only and runs on well-typed input alone, so it does no validation;
+  the fixtures call `solve` directly. The template's cross-check that asserts `solve === bruteSolve` ships
+  commented as a reference; write it in live. The `equivalent(input, a, b)` seam is there for problems
+  whose answer is not unique.
 - `examples/top-k-frequent.js` + `examples/top-k-frequent.test.js` - one fully worked instance (Top K
   Frequent Elements), runnable with `node --test examples/top-k-frequent.test.js`. The test file shows
   the tie-aware `equivalent` that compares the frequency profile rather than the raw elements, so two
