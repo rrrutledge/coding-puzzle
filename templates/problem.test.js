@@ -39,14 +39,11 @@ function bruteSolve(/* args */) {
 function equivalent(input, a, b) {
   // Default: order-independent structural equality. Replace when validity depends
   // on the input - see examples/top-k-frequent.test.js for the tie-aware form.
-  return deepEqualUnordered(a, b);
-}
-
-function deepEqualUnordered(a, b) {
-  // The only hand-written part is order-independence, which no standard routine
-  // provides: sort arrays into a canonical order first. The element-by-element
-  // comparison underneath still delegates to the built-in deep-equal (good-code
-  // rule 11) rather than a hand-rolled `.every()`.
+  // This is a single-use step, so it stays an inline block, not its own function
+  // (good-code rule 12). The only hand-written part is order-independence, which no
+  // standard routine provides: sort arrays into a canonical order first. The
+  // element-by-element comparison underneath delegates to the built-in deep-equal
+  // (rule 11) rather than a hand-rolled `.every()`.
   const canonical = (x) => (Array.isArray(x) ? [...x].map(String).sort() : x);
   let equal;
   try {
