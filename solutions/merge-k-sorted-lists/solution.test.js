@@ -26,9 +26,15 @@ const { solve } = require('./solution'); // points at solutions/<slug>/solution.
 // for the plainest read - map/filter/reduce chains and built-in Set/Map/sort,
 // clarity over speed (good-code rule 9).
 // eslint-disable-next-line no-unused-vars -- stub; used by the cross-check once it's written in live
-function bruteSolve(/* args */) {
-  // TODO: the sort-then-index / functional version you'd never doubt.
-  throw new Error('bruteSolve not implemented');
+function bruteSolve(lists) {
+  // Flatten every input list into one bag of elements - order of arrival doesn't matter.
+  const flattened = lists.flat();
+
+  // Sort that bag ascending, with an explicit numeric comparator (default .sort()
+  // coerces to strings, which is wrong for negative/unbounded integers).
+  const sorted = flattened.sort((a, b) => a - b);
+
+  return sorted;
 }
 
 // ── Equivalence: are two outputs both valid answers for this input? ────────────
