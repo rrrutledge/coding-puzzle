@@ -33,6 +33,7 @@ function bruteSolve(lists) {
   // coerces to strings, which is wrong for negative/unbounded integers).
   const sorted = flattened.sort((a, b) => a - b);
 
+  // Return the merged sorted list.
   return sorted;
 }
 
