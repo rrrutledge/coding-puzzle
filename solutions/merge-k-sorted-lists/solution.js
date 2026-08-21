@@ -27,8 +27,10 @@ function validateAndSeed(lists) {
     if (!Array.isArray(list)) {
       throw new TypeError('every element of lists must be an array');
     }
-    if (!list.every((value) => Number.isInteger(value))) {
-      throw new TypeError('every list element must be an integer');
+    for (let elementIndex = 0; elementIndex < list.length; elementIndex += 1) {
+      if (!Number.isInteger(list[elementIndex])) {
+        throw new TypeError('every list element must be an integer');
+      }
     }
     total += list.length;
     if (list.length > 0) {
