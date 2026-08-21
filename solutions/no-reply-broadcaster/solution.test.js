@@ -24,10 +24,12 @@ const { solve } = require('./solution');
 // cross-check only feeds good input), so it does no input validation. Write it
 // for the plainest read - map/filter/reduce chains and built-in Set/Map/sort,
 // clarity over speed (good-code rule 9).
-// eslint-disable-next-line no-unused-vars -- stub; used by the cross-check once it's written in live
-function bruteSolve(/* args */) {
-  // TODO: the sort-then-index / functional version you'd never doubt.
-  throw new Error('bruteSolve not implemented');
+// eslint-disable-next-line no-unused-vars -- used by the cross-check, not yet wired up (separate lane)
+function bruteSolve(people, hasMessaged) {
+  return people.filter((p) => {
+    const others = people.filter((q) => q !== p);
+    return others.length > 0 && others.every((q) => hasMessaged(p, q) === true && hasMessaged(q, p) === false);
+  });
 }
 
 // ── Equivalence: are two outputs both valid answers for this input? ────────────
