@@ -305,9 +305,9 @@ fast-check cross-check). The brute is test-only - it exists only to verify `solv
 test file, never in the shipped source, and it runs on well-typed input alone, so it does no validation.
 The fixtures call `solve` directly (the production code), and the cross-check feeds well-typed random
 inputs through both solutions. The test imports only `solve`; nothing flows the other way. The files you
-build in are the ones that ship. Seed them from `templates/problem.js` and `templates/problem.test.js`
-for the split source/test scaffolding and the helpers, and point the test file's `require` at
-`./solution`. The shipped source (`solve`, `validateInput`) and the test-only oracle plus infrastructure
+build in are the ones that ship. Seed them from the repo-root `templates/` folder (`templates/problem.js`
+and `templates/problem.test.js`) for the split source/test scaffolding and the helpers, and point the
+test file's `require` at `./solution`. The shipped source (`solve`, `validateInput`) and the test-only oracle plus infrastructure
 (`bruteSolve`, fixtures, `equivalent`, the fast-check harness) stay in their own files, never merged into
 one. The template is a reference to build from, not a file to carry forward verbatim: its commented-out
 cross-check block shows the shape, and you write the real one in live, so a commented-out cross-check
@@ -428,7 +428,8 @@ the verdict. Profile each reviewer's time during practice and cut any that costs
 
 ## Files
 
-- `templates/problem.js` + `templates/problem.test.js` - the per-problem template, split source from
+- `templates/problem.js` + `templates/problem.test.js` - the per-problem template, a repo-root folder so a
+  rep seeds its solution from an ordinary path rather than reaching into `.claude/`; split source from
   test. Seed a matched working pair from them and fill in: `validateInput` and `solve` in the `.js` file
   (the shipped source); the `bruteSolve` oracle, the fixtures, and a fast-check `inputArbitrary` in the
   `.test.js` file. The brute is test-only and runs on well-typed input alone, so it does no validation;
