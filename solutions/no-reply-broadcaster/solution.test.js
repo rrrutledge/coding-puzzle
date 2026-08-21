@@ -13,7 +13,6 @@
 
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-// eslint-disable-next-line no-unused-vars -- stub; used once inputArbitrary/the cross-check are filled in
 const fc = require('fast-check');
 const { solve } = require('./solution');
 
@@ -24,7 +23,6 @@ const { solve } = require('./solution');
 // cross-check only feeds good input), so it does no input validation. Write it
 // for the plainest read - map/filter/reduce chains and built-in Set/Map/sort,
 // clarity over speed (good-code rule 9).
-// eslint-disable-next-line no-unused-vars -- used by the cross-check, not yet wired up (separate lane)
 function bruteSolve(people, hasMessaged) {
   return people.filter((p) => {
     const others = people.filter((q) => q !== p);
@@ -139,35 +137,110 @@ test('fixture: invalid type in people', () => {
 });
 
 // ── Random input generator ────────────────────────────────────────────────────
-// fast-check, not a hand-rolled PRNG - it already biases toward edge cases
-// (empty, single-element, boundary values) and shrinks a failure to its
-// minimal counterexample. Compose it from the problem's own shape; see
-// examples/top-k-frequent.test.js for a worked one (a small element pool to
-// force duplicates/ties, k derived from nums via .chain()).
-// TODO: build the real arbitrary, e.g.:
-// const inputArbitrary = fc
-//   .array(fc.integer({ min: -100, max: 100 }))
-//   .chain((nums) => fc.integer({ min: 1, max: Math.max(nums.length, 1) }).map((k) => [nums, k]));
+// fast-check, not a hand-rolled PRNG. `people` is a distinct-positive-integer
+// array (size 0..8, so N=0 and N=1 show up often). The message graph is
+// `.chain()`ed off `people` so it's sized to the actual N, then drawn from a
+// weighted mix of a uniform-random graph and four hand-biased shapes this
+// problem specifically cares about: empty graph, complete graph, a planted
+// qualifier (one person with full outgoing / zero incoming), and a near-miss
+// (same, but one incoming edge flipped on) - a uniform-random graph almost
+// never produces a qualifier on its own, so those shapes are drawn explicitly
+// rather than left to chance. `edges` rides along for mismatch reporting.
+function orderedPairs(people) {
+  const pairs = [];
+  for (const a of people) {
+    for (const b of people) {
+      if (a !== b) {
+        pairs.push([a, b]);
+      }
+    }
+  }
+  return pairs;
+}
+
+function edgesFromBits(pairs, bits) {
+  return pairs.filter((_, i) => bits[i]);
+}
+
+// One shared bits-arbitrary builder, parameterized by shape. `planted` and
+// `nearMiss` pick a qualifier index and a random-bit base, then force that
+// person's row/column; `nearMiss` additionally flips one of their incoming
+// edges back on. Both fall back to plain random bits when N < 2, since there's
+// no "everyone else" to plant a qualifier against.
+function biasedBitsArbitrary(people, pairs, mode) {
+  const n = pairs.length;
+  const randomBits = () => fc.array(fc.boolean(), { minLength: n, maxLength: n });
+  if (mode === 'empty') {
+    return fc.constant(pairs.map(() => false));
+  }
+  if (mode === 'complete') {
+    return fc.constant(pairs.map(() => true));
+  }
+  if (mode === 'random' || people.length < 2) {
+    return randomBits();
+  }
+  return fc
+    .tuple(
+      fc.integer({ min: 0, max: people.length - 1 }), // qualifier index
+      randomBits(), // base bits, then overwritten for the qualifier's row/column
+      fc.integer({ min: 0, max: people.length - 2 }), // which other person gets the flipped-back incoming edge
+    )
+    .map(([qIdx, baseBits, flipTarget]) => {
+      const q = people[qIdx];
+      const bits = [...baseBits];
+      pairs.forEach(([a, b], i) => {
+        if (a === q) {
+          bits[i] = true; // qualifier messaged everyone
+        }
+        if (b === q) {
+          bits[i] = false; // nobody messaged the qualifier back
+        }
+      });
+      if (mode === 'nearMiss') {
+        const others = people.filter((p) => p !== q);
+        const target = others[flipTarget % others.length];
+        const incomingIdx = pairs.findIndex(([a, b]) => a === target && b === q);
+        bits[incomingIdx] = true; // exactly one person messages the qualifier back
+      }
+      return bits;
+    });
+}
+
+const inputArbitrary = fc
+  .uniqueArray(fc.integer({ min: 1, max: 1000 }), { minLength: 0, maxLength: 8 })
+  .chain((people) => {
+    const pairs = orderedPairs(people);
+    return fc
+      .oneof(
+        { weight: 3, arbitrary: biasedBitsArbitrary(people, pairs, 'random') },
+        { weight: 1, arbitrary: biasedBitsArbitrary(people, pairs, 'empty') },
+        { weight: 1, arbitrary: biasedBitsArbitrary(people, pairs, 'complete') },
+        { weight: 2, arbitrary: biasedBitsArbitrary(people, pairs, 'planted') },
+        { weight: 2, arbitrary: biasedBitsArbitrary(people, pairs, 'nearMiss') },
+      )
+      .map((bits) => {
+        const edges = edgesFromBits(pairs, bits);
+        return { input: [people, buildHasMessaged(edges)], edges };
+      });
+  });
 
 // ── Cross-validation: the load-bearing check ──────────────────────────────────
-// This block is a reference for the shape. In the real solutions/<slug>/solution.test.js,
-// write the cross-check in live - uncommented, wired to the real inputArbitrary, running
-// its NUM_RUNS. A commented-out cross-check is a no-op; see good-test.md.
-// test('cross-check: optimized matches brute on random inputs', () => {
-//   const NUM_RUNS = 2000;
-//   fc.assert(
-//     fc.property(inputArbitrary, (input) => {
-//       const got = solve(...input);
-//       const want = bruteSolve(...input);
-//       assert.ok(
-//         equivalent(input, got, want),
-//         `mismatch\n` +
-//           `  input:     ${JSON.stringify(input)}\n` +
-//           `  optimized: ${JSON.stringify(got)}\n` +
-//           `  brute:     ${JSON.stringify(want)}`,
-//       );
-//     }),
-//     { numRuns: NUM_RUNS, seed: 1 },
-//   );
-//   console.log(`cross-check: ${NUM_RUNS} fast-check runs (seed 1), 0 mismatches`);
-// });
+test('cross-check: optimized matches brute on random inputs', () => {
+  const NUM_RUNS = 300;
+  fc.assert(
+    fc.property(inputArbitrary, ({ input, edges }) => {
+      const got = solve(...input);
+      const want = bruteSolve(...input);
+      assert.ok(
+        equivalent(input, got, want),
+        `mismatch\n` +
+          `  people:    ${JSON.stringify(input[0])}\n` +
+          `  edges:     ${JSON.stringify(edges)}\n` +
+          `  optimized: ${JSON.stringify(got)}\n` +
+          `  brute:     ${JSON.stringify(want)}`,
+      );
+    }),
+    { numRuns: NUM_RUNS, seed: 1 },
+  );
+  console.log(`cross-check: ${NUM_RUNS} fast-check runs (seed 1), 0 mismatches`);
+});
