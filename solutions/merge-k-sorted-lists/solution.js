@@ -7,21 +7,19 @@
 
 // ── Input validation + heap seeding: one pass over lists ──────────────────────
 // Walk lists once: check each sublist's shape and every element's type, and
-// while already there, fold the element count into total and seed the heap
-// with each non-empty sublist's head. Throwing partway through is fine -
-// nothing built so far escapes solve.
+// while already there, seed the heap with each non-empty sublist's head.
+// Throwing partway through is fine - nothing built so far escapes solve.
 function validateAndSeed(lists) {
   // Reject anything but an array at the top level before touching its contents.
   if (!Array.isArray(lists)) {
     throw new TypeError('lists must be an array of arrays');
   }
 
-  // Accumulate the total element count and the heap's seed entries as we go.
-  let total = 0;
+  // Accumulate the heap's seed entries as we go.
   const heap = [];
 
-  // Walk each list once: validate its shape and element types, fold its
-  // length into total, and seed the heap with its head if it has one.
+  // Walk each list once: validate its shape and element types, and seed the
+  // heap with its head if it has one.
   for (let listIndex = 0; listIndex < lists.length; listIndex += 1) {
     const list = lists[listIndex];
     if (!Array.isArray(list)) {
@@ -32,14 +30,13 @@ function validateAndSeed(lists) {
         throw new TypeError('every list element must be an integer');
       }
     }
-    total += list.length;
     if (list.length > 0) {
       heap.push({ value: list[0], listIndex, elementIndex: 0 });
     }
   }
 
-  // Return the totals and seed entries for solve to heapify and drain.
-  return { total, heap };
+  // Return the seed entries for solve to heapify and drain.
+  return { heap };
 }
 
 // ── Heap helpers: array-backed binary min-heap over {value, listIndex, elementIndex} ──
@@ -108,25 +105,20 @@ function* drain(heap, lists) {
  * Merge k already-sorted integer arrays into one sorted array, ascending.
  * @param {number[][]} lists - k arrays, each sorted ascending; lists or sublists may be empty.
  * @returns {number[]} A new array holding every element from every sublist, sorted ascending. Never mutates lists.
- * Time: O(k + N log k) - O(N+k) to validate/size/seed, O(k) to heapify, N emissions each O(log k) to re-sift.
+ * Time: O(k + N log k) - O(N+k) to validate/seed, O(k) to heapify, N emissions each O(log k) to re-sift.
  * Space: O(min(k, N)) auxiliary for the heap, plus the required O(N) output array.
  */
 function solve(lists) {
-  // Validate, total the element count, and seed the heap with each list's head, in one pass.
-  const { total, heap } = validateAndSeed(lists);
-  const merged = new Array(total);
+  // Validate and seed the heap with each list's head, in one pass.
+  const { heap } = validateAndSeed(lists);
 
   // Heapify the seeded heads in place, O(k), starting from the last non-leaf node: floor(length/2)-1.
   for (let i = Math.floor(heap.length / 2) - 1; i >= 0; i -= 1) {
     siftDown(heap, i);
   }
 
-  // Drain the heap in ascending order, writing each emitted value into merged by index.
-  let writeIndex = 0;
-  for (const value of drain(heap, lists)) {
-    merged[writeIndex] = value;
-    writeIndex += 1;
-  }
+  // Drain the heap in ascending order, collecting each emitted value into the merged array.
+  const merged = [...drain(heap, lists)];
 
   // Return the fully merged, sorted array.
   return merged;
