@@ -36,7 +36,7 @@ function validateAndSeed(lists) {
   }
 
   // Return the seed entries for solve to heapify and drain.
-  return { heap };
+  return heap;
 }
 
 // ── Heap helpers: array-backed binary min-heap over {value, listIndex, elementIndex} ──
@@ -110,7 +110,7 @@ function* drain(heap, lists) {
  */
 function solve(lists) {
   // Validate and seed the heap with each list's head, in one pass.
-  const { heap } = validateAndSeed(lists);
+  const heap = validateAndSeed(lists);
 
   // Heapify the seeded heads in place, O(k), starting from the last non-leaf node: floor(length/2)-1.
   for (let i = Math.floor(heap.length / 2) - 1; i >= 0; i -= 1) {
