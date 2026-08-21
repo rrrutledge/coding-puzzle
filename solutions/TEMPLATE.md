@@ -5,7 +5,7 @@
 ## Problem
 
 State the problem as it was posed - the input, the output, and the rule that ties them.
-Keep it to what an interviewer would say out loud, not a re-derivation.
+Keep it to how the problem statement itself put it, not a re-derivation.
 
 ## Approach
 

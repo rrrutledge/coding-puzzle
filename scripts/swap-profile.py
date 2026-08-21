@@ -9,11 +9,11 @@ REPO_DIR = Path(__file__).resolve().parent.parent
 LINKS = {
     "CLAUDE.md": {
         "personal": HOME / "OneDrive" / "Claude" / ".claude" / "CLAUDE.md",
-        "interview": REPO_DIR / "interview-profile" / "CLAUDE.md",
+        "puzzle": REPO_DIR / "puzzle-profile" / "CLAUDE.md",
     },
     "settings.json": {
         "personal": HOME / "OneDrive" / "Claude" / ".claude" / "settings.json",
-        "interview": REPO_DIR / "interview-profile" / "settings.json",
+        "puzzle": REPO_DIR / "puzzle-profile" / "settings.json",
     },
 }
 
@@ -46,13 +46,13 @@ def status():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2 or sys.argv[1] not in ("interview", "restore", "status"):
-        print("Usage: python swap-profile.py [interview|restore|status]")
+    if len(sys.argv) != 2 or sys.argv[1] not in ("puzzle", "restore", "status"):
+        print("Usage: python swap-profile.py [puzzle|restore|status]")
         sys.exit(1)
 
     mode = sys.argv[1]
     if mode == "status":
         status()
     else:
-        swap_to("interview" if mode == "interview" else "personal")
+        swap_to("puzzle" if mode == "puzzle" else "personal")
         print(f"\nSwapped to: {mode}")

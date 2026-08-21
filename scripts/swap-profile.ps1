@@ -1,20 +1,20 @@
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("interview", "restore", "status")]
+    [ValidateSet("puzzle", "restore", "status")]
     [string]$Mode
 )
 
 $ClaudeDir = "C:\Users\russe\.claude"
-$RepoDir = "C:\Users\russe\dev\hubspot-interview-prep"
+$RepoDir = "C:\Users\russe\dev\coding-puzzle"
 
 $Links = @{
     "CLAUDE.md" = @{
-        personal  = "C:\Users\russe\OneDrive\Claude\.claude\CLAUDE.md"
-        interview = "$RepoDir\interview-profile\CLAUDE.md"
+        personal = "C:\Users\russe\OneDrive\Claude\.claude\CLAUDE.md"
+        puzzle   = "$RepoDir\puzzle-profile\CLAUDE.md"
     }
     "settings.json" = @{
-        personal  = "C:\Users\russe\OneDrive\Claude\.claude\settings.json"
-        interview = "$RepoDir\interview-profile\settings.json"
+        personal = "C:\Users\russe\OneDrive\Claude\.claude\settings.json"
+        puzzle   = "$RepoDir\puzzle-profile\settings.json"
     }
 }
 
@@ -33,7 +33,7 @@ if ($Mode -eq "status") {
     exit 0
 }
 
-$targetKey = if ($Mode -eq "interview") { "interview" } else { "personal" }
+$targetKey = if ($Mode -eq "puzzle") { "puzzle" } else { "personal" }
 
 foreach ($name in $Links.Keys) {
     $link = Join-Path $ClaudeDir $name

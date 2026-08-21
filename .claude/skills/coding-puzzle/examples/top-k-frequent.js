@@ -1,6 +1,6 @@
 'use strict';
 
-// Worked example of the coding-interview loop: Top K Frequent Elements.
+// Worked example of the coding-puzzle loop: Top K Frequent Elements.
 // Given an integer array and a number k, return the k most frequent elements.
 // The order of the returned elements is not specified, and when several elements
 // tie at the k-th frequency any valid selection among them is correct.

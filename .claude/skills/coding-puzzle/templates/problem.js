@@ -1,6 +1,6 @@
 'use strict';
 
-// Per-problem source for the coding-interview loop.
+// Per-problem source for the coding-puzzle loop.
 // Copy this to a working file (e.g. rep.js) and fill bruteSolve and solve.
 // The paired <file>.test.js requires this file and drives everything else.
 

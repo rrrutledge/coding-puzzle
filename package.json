@@ -1,8 +1,8 @@
 {
-  "name": "hubspot-interview-prep",
+  "name": "coding-puzzle",
   "private": true,
   "version": "1.0.0",
-  "description": "Rehearsal loop for HubSpot's AI-Fluency Coding interview.",
+  "description": "Live-pairing loop for solving algorithmic coding puzzles out loud with an orchestrating agent.",
   "scripts": {
     "lint": "eslint ."
   },

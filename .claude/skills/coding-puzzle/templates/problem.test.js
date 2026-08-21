@@ -1,6 +1,6 @@
 'use strict';
 
-// Per-problem test harness for the coding-interview loop.
+// Per-problem test harness for the coding-puzzle loop.
 // Fill bruteSolve/solve in the paired source file first (e.g. rep.js), point
 // the require below at it, then fill the fixtures and inputArbitrary here.
 // Run with:  node --test <file>

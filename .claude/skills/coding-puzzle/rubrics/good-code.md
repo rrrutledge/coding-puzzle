@@ -2,7 +2,7 @@
 
 Reviews the implementations: the brute reference, the optimized solution, and the harness code once
 written. For the code artifact the built-in `/code-review` is the starting reviewer; this rubric adds the
-interview-specific things `/code-review` does not weigh.
+puzzle-specific things `/code-review` does not weigh.
 
 The code does its job when it implements the approved plan without substitution, handles the clarified
 boundaries the plan named, leaves the brute reference obviously-correct (it is the oracle), and carries

@@ -1,6 +1,6 @@
 'use strict';
 
-// Worked example of the coding-interview loop: Top K Frequent Elements.
+// Worked example of the coding-puzzle loop: Top K Frequent Elements.
 // This is the test half: hand-derived fixtures, the equivalence check, and the
 // random cross-check that leans on the oracle from the paired top-k-frequent.js.
 // The one subtlety worth narrating: the answer is not unique when frequencies
