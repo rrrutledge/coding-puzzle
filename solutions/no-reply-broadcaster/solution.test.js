@@ -11,7 +11,6 @@
 // answer isn't unique, and the random cross-check (via fast-check) that asserts
 // solve === bruteSolve. That cross-check is the load-bearing verification.
 
-// eslint-disable-next-line no-unused-vars -- stub; used once the fixture/cross-check test() calls are added below
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 // eslint-disable-next-line no-unused-vars -- stub; used once inputArbitrary/the cross-check are filled in
@@ -55,6 +54,16 @@ function equivalent(input, a, b) {
   return equal;
 }
 
+// ── Mock oracle builder: turns an edge list into a hasMessaged closure ────────
+// `hasMessaged` is a black-box function parameter, not literal data, so each
+// fixture's message graph is expressed as an ordered edge list ([a, b] means
+// a has messaged b) and turned into the (a, b) => boolean the solve signature
+// expects via a Set lookup. This helper is test-only and lives in this file.
+function buildHasMessaged(edges) {
+  const sent = new Set(edges.map(([a, b]) => `${a},${b}`));
+  return (a, b) => sent.has(`${a},${b}`);
+}
+
 // ── Hardcoded fixtures: locked after the sample-cases gate ────────────────────
 // Each expected value is worked out by hand from the statement, never copied from
 // a solution's output. Span the clarified boundaries: empty, single, dupes, ties,
@@ -62,24 +71,70 @@ function equivalent(input, a, b) {
 // written below as one test() call per fixture rather than a loop over the table -
 // a GUI test explorer can only find and click-run a literally-named test() call,
 // not one generated dynamically inside a loop.
-// eslint-disable-next-line no-unused-vars -- stub; used once test() calls are added below
-function checkFixture(name, input, expected) {
+// `input` here is always [people, hasMessagedFn]; the log line reports `people`
+// and the edge list separately (not raw JSON.stringify(input)) since a function
+// element serializes to `null` and would say nothing useful.
+function checkFixture(name, input, expected, edges) {
   assert.ok(equivalent(input, solve(...input), expected), `optimized disagrees with fixture "${name}"`);
-  console.log(`fixture "${name}": ${JSON.stringify(input)} -> ${JSON.stringify(expected)}`);
+  console.log(
+    `fixture "${name}": people=${JSON.stringify(input[0])} edges=${JSON.stringify(edges)} -> ${JSON.stringify(expected)}`,
+  );
 }
 
 // A boundary fixture whose expected behavior is rejection - out of range or the
 // wrong type entirely - rather than a value. See good-test.md rule 4.
-// eslint-disable-next-line no-unused-vars -- stub; used once test() calls are added below
-function checkThrows(name, input, ErrorType) {
+function checkThrows(name, input, ErrorType, edges) {
   assert.throws(() => solve(...input), ErrorType, `optimized should reject fixture "${name}"`);
-  console.log(`fixture "${name}": ${JSON.stringify(input)} -> throws ${ErrorType.name}`);
+  console.log(
+    `fixture "${name}": people=${JSON.stringify(input[0])} edges=${JSON.stringify(edges)} -> throws ${ErrorType.name}`,
+  );
 }
 
-// TODO: one test() per locked fixture, e.g.:
-// test('fixture: empty', () => checkFixture('empty', [[], 0], []));
-// test('fixture: single', () => checkFixture('single', [[5], 1], [5]));
-// test('fixture: wrong type', () => checkThrows('k is a string', [[1, 2, 3], '2'], TypeError));
+test('fixture: empty', () => {
+  checkFixture('empty', [[], buildHasMessaged([])], [], []);
+});
+
+test('fixture: single (N=1)', () => {
+  checkFixture('single (N=1)', [[1], buildHasMessaged([])], [], []);
+});
+
+test('fixture: clear qualifier', () => {
+  const edges = [
+    [1, 2],
+    [1, 3],
+    [2, 3],
+  ];
+  checkFixture('clear qualifier', [[1, 2, 3], buildHasMessaged(edges)], [1], edges);
+});
+
+test('fixture: complete graph', () => {
+  const edges = [
+    [1, 2],
+    [1, 3],
+    [2, 1],
+    [2, 3],
+    [3, 1],
+    [3, 2],
+  ];
+  checkFixture('complete graph', [[1, 2, 3], buildHasMessaged(edges)], [], edges);
+});
+
+test('fixture: empty graph', () => {
+  checkFixture('empty graph', [[1, 2, 3], buildHasMessaged([])], [], []);
+});
+
+test('fixture: near-miss (one inbound)', () => {
+  const edges = [
+    [1, 2],
+    [1, 3],
+    [2, 1],
+  ];
+  checkFixture('near-miss (one inbound)', [[1, 2, 3], buildHasMessaged(edges)], [], edges);
+});
+
+test('fixture: invalid type in people', () => {
+  checkThrows('invalid type in people', [[1, '2', 3], () => false], TypeError, []);
+});
 
 // ── Random input generator ────────────────────────────────────────────────────
 // fast-check, not a hand-rolled PRNG - it already biases toward edge cases
