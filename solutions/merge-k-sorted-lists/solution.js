@@ -23,6 +23,7 @@ function validateInput(lists) {
 // ── Heap helpers: array-backed binary min-heap over {value, listIndex, elementIndex} ──
 // Return the index of the smallest of a node and its (up to two) children.
 function smallestChild(heap, index) {
+  // Binary heap children of i: left = 2i+1, right = 2i+2.
   const left = 2 * index + 1;
   const right = 2 * index + 2;
   let smallest = index;
@@ -48,6 +49,7 @@ function siftDown(heap, index) {
 
 // Turn an arbitrary array of entries into a valid min-heap in place, O(k).
 function heapify(heap) {
+  // Start from the last non-leaf node: floor(length/2)-1.
   for (let i = Math.floor(heap.length / 2) - 1; i >= 0; i -= 1) {
     siftDown(heap, i);
   }
