@@ -44,13 +44,21 @@ is that evidence being absent, not the presence of some named bad pattern.
    and follow the algorithm before reading any code.
    **Check:** every blank-line-delimited group of statements in the function carries a comment on the
    line immediately above it, naming what that group does.
-4. **Functional for single-pass glue, loops for the core algorithm.** A lone `.map()`/`.filter()`/
-   `.reduce()` call is fine when it is genuinely one pass over the data. The core optimized step - the
-   part that makes the complexity what it is (two-pointer, sliding window, in-place partition, heap) - is
-   an explicit loop with local mutable state, since precise control over passes and allocations is what
-   makes it optimal.
-   **Check:** each functional array-method call stands on its own rather than feeding directly into
-   another `.map()`/`.filter()`/`.reduce()`, and the core optimized step is written as an explicit loop.
+4. **In the optimized solution, prefer a functional pass; drop to a loop only to avoid an extra pass.**
+   A step that makes exactly one pass and computes one value reads clearer as `.map()`/`.filter()`/
+   `.reduce()` than as a hand-written loop - a loop whose body just accumulates a single result is a
+   `reduce`. The one thing the optimized solution must not do is buy that readability with an extra walk
+   over the data: a `.filter().map().reduce()` chain that traverses three times folds into one `reduce`.
+   Keep an explicit loop only where a single functional pass cannot express the step without iterating
+   again - producing several aligned outputs at once, scattering into a pre-sized structure by index,
+   multiple moving indices (two-pointer), a window carrying mutable state, in-place mutation, or an early
+   stop (rule 6) that quits before the end where a `reduce` would run the whole array. The deciding
+   question is passes-over-the-data: take the functional form whenever it holds the pass count flat, the
+   loop whenever the functional form would cost another walk.
+   **Check:** a single-pass accumulation that computes one value appears as one functional call, not a
+   loop; no functional call feeds another so that the data is walked more than once; and each explicit
+   loop that remains is doing what one functional pass cannot - several aligned outputs, index-scatter,
+   multiple indices, carried window state, in-place mutation, or an early combined-condition stop.
 5. **Functions live at the same level.** Every function - including small helpers - is its own top-level
    declaration, not nested inside another function's body. A helper that needs data from its caller takes
    it as a parameter instead of closing over it.
@@ -82,3 +90,22 @@ is that evidence being absent, not the presence of some named bad pattern.
    self-explanatory from the case it sits in and isn't what this targets.
    **Check:** every literal number besides `0`/`1` in the algorithm's logic has an explanatory comment on
    the same or preceding line, or is declared as a named constant instead of appearing inline.
+9. **The brute reference maximizes clarity with functional constructs and built-ins.** The brute is the
+   oracle and answers only to being obviously correct, never to speed, so write it for the plainest
+   possible read: `.map()`/`.filter()`/`.reduce()` and chains of them, and the built-in structures the
+   standard library already gives you (`Set`, `Map`, `Array.prototype.sort`) rather than a hand-rolled
+   reimplementation. Extra passes and extra allocations are fine here - the whole point is that a reader
+   agrees at a glance that it computes the right answer. This is the one place the pass-count discipline
+   of rule 4 does not apply; it governs the optimized solution, not the oracle.
+   **Check:** the brute solution reaches for functional array methods and built-in `Set`/`Map`/`sort`
+   where they express the computation directly, and reimplements no structure or routine the standard
+   library already provides.
+10. **A walk over every element is a `for` loop, not a `while`.** When a loop that must stay a loop (per
+    rule 4) simply visits each element of a collection in order, write it as a `for` loop - the running
+    index and its bound belong together in the loop header, not spread across a `while` and a manual
+    `index += 1` in the body. Reserve `while` for a loop whose continuation is something other than an
+    index reaching a fixed length: a queue or stack that grows as it drains (BFS/DFS), or an
+    iterate-until-condition search that ends when a value converges rather than when an index runs out.
+    **Check:** every full in-order traversal of a collection is a `for` loop or a functional method, and
+    each `while` loop's condition is something other than a running index reaching a fixed length - a
+    growing worklist or a converge-until-true test.

@@ -1,16 +1,15 @@
 'use strict';
 
-// K Closest Points to Origin - the shipped solution and its brute oracle.
+// K Closest Points to Origin - the shipped solution. The brute oracle is
+// test-only and lives in solution.test.js.
 // See README.md in this folder for the problem, approach, and complexity.
 // solution.test.js requires this file and drives the fixtures + cross-check.
 
-// ── Input validation: shared between brute and optimized ─────────────────────
-// Both must reject the same bad input identically. This isn't part of the
-// algorithm the cross-check verifies, so sharing it doesn't undermine the
-// oracle's independence - see good-code.md rule 7. Cover range (too high, too
-// low) and type (wrong type entirely, not just wrong value) - both, not just
-// one, per rule 2. Points shape is checked before k's range, since k's bound
-// depends on points.length.
+// ── Input validation: the shipped solution's guard ────────────────────────────
+// solve rejects bad input here. Cover range (too high, too low) and type (wrong
+// type entirely, not just wrong value) - both, not just one, per good-code.md
+// rule 2. Points shape is checked before k's range, since k's bound depends on
+// points.length.
 function validateInput(points, k) {
   if (!Array.isArray(points)) {
     throw new TypeError('points must be an array');
@@ -33,27 +32,6 @@ function validateInput(points, k) {
   if (k < 1 || k > points.length) {
     throw new RangeError(`k must be in [1, ${points.length}], got ${k}`);
   }
-}
-
-// ── Brute reference: the oracle ───────────────────────────────────────────────
-// Obviously correct, no cleverness. Its only job is to be trustworthy so the
-// cross-check can lean on it. Slower is fine.
-function bruteSolve(points, k) {
-  // Reject bad input before doing any work.
-  validateInput(points, k);
-
-  // Squared distance preserves ordering vs. true Euclidean distance, so no
-  // sqrt and no float rounding - exact equality for ties. Read points by
-  // index only; never mutate it.
-  const dist = points.map((point) => point[0] * point[0] + point[1] * point[1]);
-
-  // Find the k-th smallest distance by sorting a copy.
-  const sortedDist = [...dist].sort((a, b) => a - b);
-  const cutoff = sortedDist[k - 1];
-
-  // Every point whose distance is at or below the cutoff is a winner - ties
-  // fall out automatically. Unsorted, untrimmed.
-  return points.filter((point, i) => dist[i] <= cutoff);
 }
 
 // ── Optimized solution: the shipped artifact ──────────────────────────────────
@@ -140,4 +118,4 @@ function solve(points, k) {
   return pointsScratch.slice(0, boundary + 1);
 }
 
-module.exports = { solve, bruteSolve };
+module.exports = { solve };

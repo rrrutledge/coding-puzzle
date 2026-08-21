@@ -12,7 +12,27 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fc = require('fast-check');
-const { solve, bruteSolve } = require('./solution');
+const { solve } = require('./solution');
+
+// ── Brute reference: the oracle (test-only, never shipped) ────────────────────
+// Obviously correct, no cleverness - its only job is to be trustworthy so the
+// cross-check can lean on it. It lives here, not in solution.js, because it is
+// only ever used by these tests, and it runs on well-typed input alone (the
+// cross-check only feeds good input), so it does no input validation.
+function bruteSolve(points, k) {
+  // Squared distance preserves ordering vs. true Euclidean distance, so no
+  // sqrt and no float rounding - exact equality for ties. Read points by
+  // index only; never mutate it.
+  const dist = points.map((point) => point[0] * point[0] + point[1] * point[1]);
+
+  // Find the k-th smallest distance by sorting a copy.
+  const sortedDist = [...dist].sort((a, b) => a - b);
+  const cutoff = sortedDist[k - 1];
+
+  // Every point whose distance is at or below the cutoff is a winner - ties
+  // fall out automatically. Unsorted, untrimmed.
+  return points.filter((point, i) => dist[i] <= cutoff);
+}
 
 // ── Equivalence: are two outputs both valid answers for this input? ────────────
 // Many problems have more than one correct output (order unspecified, ties broken
@@ -54,7 +74,6 @@ function equivalent(input, a, b) {
 // a GUI test explorer can only find and click-run a literally-named test() call,
 // not one generated dynamically inside a loop.
 function checkFixture(name, input, expected) {
-  assert.ok(equivalent(input, bruteSolve(...input), expected), `brute disagrees with fixture "${name}"`);
   assert.ok(equivalent(input, solve(...input), expected), `optimized disagrees with fixture "${name}"`);
   console.log(`fixture "${name}": ${JSON.stringify(input)} -> ${JSON.stringify(expected)}`);
 }
@@ -62,7 +81,6 @@ function checkFixture(name, input, expected) {
 // A boundary fixture whose expected behavior is rejection - out of range or the
 // wrong type entirely - rather than a value. See good-test.md rule 4.
 function checkThrows(name, input, ErrorType) {
-  assert.throws(() => bruteSolve(...input), ErrorType, `brute should reject fixture "${name}"`);
   assert.throws(() => solve(...input), ErrorType, `optimized should reject fixture "${name}"`);
   console.log(`fixture "${name}": ${JSON.stringify(input)} -> throws ${ErrorType.name}`);
 }

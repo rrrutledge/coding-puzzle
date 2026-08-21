@@ -1,7 +1,10 @@
 # good-test - the test-artifact rubric
 
 Reviews the test artifacts: the hardcoded sample cases (the locked fixtures) and the cross-validation
-harness that feeds random inputs through both solutions.
+harness that feeds random inputs through both solutions. The `bruteSolve` oracle shares this file - it is
+test-only, existing only to verify `solve`, so it lives here rather than in the shipped source - but as an
+algorithm it is reviewed under `good-code`, not here; judge only the fixtures and the harness against the
+rules below.
 
 The test artifacts do their job when each fixture pairs a hand-derived expected output with an input that
 reaches the boundaries the clarify step raised, and the harness asserts `optimized === brute` over random
@@ -50,3 +53,10 @@ is that evidence being absent, not the presence of some named bad pattern.
    where a string is expected - and expects the validation to reject it.
    **Check:** the fixtures include a case whose input has at least one argument of the wrong type, with an
    expectation that it's rejected (a thrown error, or whatever the approved plan called for on bad input).
+5. **The cross-check ships live in the solution file, never commented out.** The template carries the
+   cross-check `test()` block commented, as a reference for its shape; the real `solutions/<slug>/`
+   test file has it written in live - uncommented, wired to the real `inputArbitrary`, running its
+   `numRuns`. A commented-out cross-check runs zero trials, reducing the load-bearing verification to a
+   no-op.
+   **Check:** the test file has an uncommented `test('cross-check...', ...)` call that runs `fc.assert`
+   over the real `inputArbitrary` and logs its trial count, not the template's commented stub.

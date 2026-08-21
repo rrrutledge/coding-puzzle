@@ -5,15 +5,12 @@
 // The order of the returned elements is not specified, and when several elements
 // tie at the k-th frequency any valid selection among them is correct.
 //
-// This is the source half: the brute oracle and the shipped optimized solution.
-// The paired top-k-frequent.test.js has the fixtures, the equivalence check, and
-// the random cross-check.
+// This is the source half: the shipped optimized solution only. The brute oracle
+// is test-only, so it lives in the paired top-k-frequent.test.js alongside the
+// fixtures, the equivalence check, and the random cross-check.
 
-// ── Input validation: shared between brute and optimized ─────────────────────
-// Both must reject the same bad input identically. This isn't part of the
-// algorithm the cross-check verifies (which only ever generates well-typed
-// inputs), so sharing it doesn't undermine the oracle's independence - see
-// good-code.md rule 7.
+// ── Input validation: the shipped solution's guard ────────────────────────────
+// topKFrequent rejects bad input here.
 function validateInput(nums, k) {
   if (!Array.isArray(nums)) {
     throw new TypeError('nums must be an array');
@@ -21,19 +18,6 @@ function validateInput(nums, k) {
   if (!Number.isInteger(k) || k < 0) {
     throw new RangeError(`k must be a non-negative integer, got ${k}`);
   }
-}
-
-// ── Brute reference: the oracle ───────────────────────────────────────────────
-// Reject bad input first, then count, sort the distinct values by count
-// descending, and take the first k. Plainly correct; O(n + m log m) where m is
-// the distinct count. Not shipped.
-function bruteTopK(nums, k) {
-  validateInput(nums, k);
-  const counts = new Map();
-  for (const n of nums) {counts.set(n, (counts.get(n) ?? 0) + 1);}
-  return [...counts.keys()]
-    .sort((a, b) => counts.get(b) - counts.get(a))
-    .slice(0, k);
 }
 
 // ── Optimized solution: the shipped artifact ──────────────────────────────────
@@ -53,11 +37,11 @@ function topKFrequent(nums, k) {
   // Reject bad input before doing any work.
   validateInput(nums, k);
 
-  // Count how many times each value appears.
-  const counts = new Map();
-  for (const n of nums) {counts.set(n, (counts.get(n) ?? 0) + 1);}
+  // Count how many times each value appears - one reduce pass into a Map.
+  const counts = nums.reduce((m, n) => m.set(n, (m.get(n) ?? 0) + 1), new Map());
 
-  // buckets[c] = the values that appear exactly c times.
+  // buckets[c] = the values that appear exactly c times. Scattering into a
+  // pre-sized array by index is a loop, not a functional pass (rule 4).
   const buckets = Array.from({ length: nums.length + 1 }, () => []);
   for (const [value, c] of counts) {buckets[c].push(value);}
 
@@ -74,4 +58,4 @@ function topKFrequent(nums, k) {
   return result;
 }
 
-module.exports = { topKFrequent, bruteTopK };
+module.exports = { topKFrequent };

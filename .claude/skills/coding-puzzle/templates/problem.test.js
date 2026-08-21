@@ -1,21 +1,35 @@
 'use strict';
 
 // Per-problem test harness for the coding-puzzle loop.
-// Fill bruteSolve/solve in the paired source file first (e.g. rep.js), point
-// the require below at it, then fill the fixtures and inputArbitrary here.
-// Run with:  node --test <file>
+// Seed solutions/<slug>/solution.test.js from this file. Fill validateInput/solve
+// in the paired solutions/<slug>/solution.js first and point the require below at
+// it, fill the brute oracle just below, then the fixtures and inputArbitrary here.
+// Run with:  node --test solutions/<slug>/solution.test.js
 //
-// Three things live here: hand-derived fixtures, the equivalence check for
-// problems whose answer isn't unique, and the random cross-check (via
-// fast-check) that asserts solve === bruteSolve. That cross-check is the
-// load-bearing verification.
+// Four things live here: the brute oracle (test-only, since it exists only to
+// verify solve), hand-derived fixtures, the equivalence check for problems whose
+// answer isn't unique, and the random cross-check (via fast-check) that asserts
+// solve === bruteSolve. That cross-check is the load-bearing verification.
 
 // eslint-disable-next-line no-unused-vars -- stub; used once the fixture/cross-check test() calls are added below
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 // eslint-disable-next-line no-unused-vars -- stub; used once inputArbitrary/the cross-check are filled in
 const fc = require('fast-check');
-const { solve, bruteSolve } = require('./problem'); // TODO: point at the working source file
+const { solve } = require('./solution'); // points at solutions/<slug>/solution.js once seeded
+
+// ── Brute reference: the oracle (test-only, never shipped) ────────────────────
+// Obviously correct, no cleverness - its only job is to be trustworthy so the
+// cross-check can lean on it. It lives here, not in solution.js, because it is
+// only ever used by these tests, and it runs on well-typed input alone (the
+// cross-check only feeds good input), so it does no input validation. Write it
+// for the plainest read - map/filter/reduce chains and built-in Set/Map/sort,
+// clarity over speed (good-code rule 9).
+// eslint-disable-next-line no-unused-vars -- stub; used by the cross-check once it's written in live
+function bruteSolve(/* args */) {
+  // TODO: the sort-then-index / functional version you'd never doubt.
+  throw new Error('bruteSolve not implemented');
+}
 
 // ── Equivalence: are two outputs both valid answers for this input? ────────────
 // Many problems have more than one correct output (order unspecified, ties broken
@@ -58,7 +72,6 @@ function deepEqualUnordered(a, b) {
 // not one generated dynamically inside a loop.
 // eslint-disable-next-line no-unused-vars -- stub; used once test() calls are added below
 function checkFixture(name, input, expected) {
-  assert.ok(equivalent(input, bruteSolve(...input), expected), `brute disagrees with fixture "${name}"`);
   assert.ok(equivalent(input, solve(...input), expected), `optimized disagrees with fixture "${name}"`);
   console.log(`fixture "${name}": ${JSON.stringify(input)} -> ${JSON.stringify(expected)}`);
 }
@@ -67,7 +80,6 @@ function checkFixture(name, input, expected) {
 // wrong type entirely - rather than a value. See good-test.md rule 4.
 // eslint-disable-next-line no-unused-vars -- stub; used once test() calls are added below
 function checkThrows(name, input, ErrorType) {
-  assert.throws(() => bruteSolve(...input), ErrorType, `brute should reject fixture "${name}"`);
   assert.throws(() => solve(...input), ErrorType, `optimized should reject fixture "${name}"`);
   console.log(`fixture "${name}": ${JSON.stringify(input)} -> throws ${ErrorType.name}`);
 }
@@ -89,7 +101,9 @@ function checkThrows(name, input, ErrorType) {
 //   .chain((nums) => fc.integer({ min: 1, max: Math.max(nums.length, 1) }).map((k) => [nums, k]));
 
 // ── Cross-validation: the load-bearing check ──────────────────────────────────
-// TODO: uncomment once inputArbitrary is filled in.
+// This block is a reference for the shape. In the real solutions/<slug>/solution.test.js,
+// write the cross-check in live - uncommented, wired to the real inputArbitrary, running
+// its NUM_RUNS. A commented-out cross-check is a no-op; see good-test.md.
 // test('cross-check: optimized matches brute on random inputs', () => {
 //   const NUM_RUNS = 2000;
 //   fc.assert(
