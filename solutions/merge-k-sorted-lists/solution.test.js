@@ -43,30 +43,11 @@ function bruteSolve(lists) {
 // is not flagged as a bug. `input` is the argument array, so a validity check that
 // depends on the input (e.g. tie-broken selection) has what it needs.
 function equivalent(input, a, b) {
-  // Default: order-independent structural equality. Replace when validity depends
-  // on the input - see examples/top-k-frequent.test.js for the tie-aware form.
-  return deepEqualUnordered(a, b);
-}
-
-function deepEqualUnordered(a, b) {
-  let equal;
-  if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length) {
-      equal = false;
-    } else {
-      const sa = [...a].map(String).sort();
-      const sb = [...b].map(String).sort();
-      equal = sa.every((v, i) => v === sb[i]);
-    }
-  } else {
-    try {
-      assert.deepEqual(a, b);
-      equal = true;
-    } catch {
-      equal = false;
-    }
-  }
-  return equal;
+  // This problem's output must be the fully sorted merge - order is exactly what's
+  // under test, not don't-care (ties are equal-valued, so which tied element lands
+  // at a position is moot). Plain ordered array equality, not the template's
+  // order-independent default.
+  return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((v, i) => v === b[i]);
 }
 
 // ── Hardcoded fixtures: locked after the sample-cases gate ────────────────────
@@ -99,7 +80,8 @@ test('fixture: negatives', () =>
   checkFixture('negatives', [[[-3, -1, 0], [-2, 2], [1]]], [-3, -2, -1, 0, 1, 2]));
 test('fixture: throws-null', () => checkThrows('throws-null', [null], TypeError));
 test('fixture: throws-string', () => checkThrows('throws-string', ['abc'], TypeError));
-test('fixture: throws-bad-element', () => checkThrows('throws-bad-element', [[[1, 2], 'bad']], TypeError));
+test('fixture: throws-non-array-element', () =>
+  checkThrows('throws-non-array-element', [[[1, 2], 'bad']], TypeError));
 test('fixture: throws-non-integer', () =>
   checkThrows('throws-non-integer', [[[1, 2], [1.5]]], TypeError));
 
