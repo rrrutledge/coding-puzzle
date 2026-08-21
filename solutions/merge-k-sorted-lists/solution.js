@@ -11,11 +11,17 @@
 // with each non-empty sublist's head. Throwing partway through is fine -
 // nothing built so far escapes solve.
 function validateAndSeed(lists) {
+  // Reject anything but an array at the top level before touching its contents.
   if (!Array.isArray(lists)) {
     throw new TypeError('lists must be an array of arrays');
   }
+
+  // Accumulate the total element count and the heap's seed entries as we go.
   let total = 0;
   const heap = [];
+
+  // Walk each list once: validate its shape and element types, fold its
+  // length into total, and seed the heap with its head if it has one.
   for (let listIndex = 0; listIndex < lists.length; listIndex += 1) {
     const list = lists[listIndex];
     if (!Array.isArray(list)) {
@@ -29,6 +35,8 @@ function validateAndSeed(lists) {
       heap.push({ value: list[0], listIndex, elementIndex: 0 });
     }
   }
+
+  // Return the totals and seed entries for solve to heapify and drain.
   return { total, heap };
 }
 
@@ -65,8 +73,12 @@ function siftDown(heap, index) {
 // once its list is exhausted (move-last-to-root, shrink, sift).
 function* drain(heap, lists) {
   while (heap.length > 0) {
+    // Emit the current global minimum - the heap's root.
     const root = heap[0];
     yield root.value;
+
+    // Advance that entry's list to its next element (replace-top sift), or
+    // drop the entry once its list is exhausted (move-last-to-root, shrink, sift).
     const nextIndex = root.elementIndex + 1;
     if (nextIndex < lists[root.listIndex].length) {
       heap[0] = { value: lists[root.listIndex][nextIndex], listIndex: root.listIndex, elementIndex: nextIndex };
