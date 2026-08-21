@@ -48,13 +48,21 @@ function smallestChild(heap, index) {
   // Binary heap children of i: left = 2i+1, right = 2i+2.
   const left = 2 * index + 1;
   const right = 2 * index + 2;
+
+  // Start from the node itself; it wins unless a present child is smaller.
   let smallest = index;
+
+  // A left child in range beats the current smallest.
   if (left < heap.length && heap[left].value < heap[smallest].value) {
     smallest = left;
   }
+
+  // A right child in range beats whichever of node/left is smallest so far.
   if (right < heap.length && heap[right].value < heap[smallest].value) {
     smallest = right;
   }
+
+  // Report the index of the smallest of the three.
   return smallest;
 }
 
