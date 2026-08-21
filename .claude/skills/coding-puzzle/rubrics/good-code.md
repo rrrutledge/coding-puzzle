@@ -121,3 +121,13 @@ is that evidence being absent, not the presence of some named bad pattern.
     **Check:** each standard structure or utility the solution leans on comes from the standard library or a
     named dependency; any hand-written version sits under a comment naming the optimization or the
     interleaved custom work a library form could not have provided.
+12. **A single-use step stays an inline commented block, not its own function.** A step that runs in exactly
+    one place reads best inline - a blank-line-delimited group under a comment that names it (rule 3) -
+    because pulling it into a named function only makes the reader jump to a definition and back for no gain.
+    Give a step its own function for one of three reasons: a second call site needs it (rule 7), it is long
+    enough that inlining would bury the main flow (a handful of lines is not that), or it is the
+    input-validation guard, which stays a named `validateInput` so the algorithm body opens on the happy path
+    (rule 2). Otherwise the default is one function whose steps are commented blocks.
+    **Check:** every helper function earns its separateness through a second call site, real length, or being
+    the input guard; a short step used once appears as a commented block inside its caller rather than a
+    standalone function.
