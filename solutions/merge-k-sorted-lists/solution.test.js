@@ -11,7 +11,6 @@
 // answer isn't unique, and the random cross-check (via fast-check) that asserts
 // solve === bruteSolve. That cross-check is the load-bearing verification.
 
-// eslint-disable-next-line no-unused-vars -- stub; used once the fixture/cross-check test() calls are added below
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 // eslint-disable-next-line no-unused-vars -- stub; used once inputArbitrary/the cross-check are filled in
@@ -76,7 +75,6 @@ function deepEqualUnordered(a, b) {
 // written below as one test() call per fixture rather than a loop over the table -
 // a GUI test explorer can only find and click-run a literally-named test() call,
 // not one generated dynamically inside a loop.
-// eslint-disable-next-line no-unused-vars -- stub; used once test() calls are added below
 function checkFixture(name, input, expected) {
   assert.ok(equivalent(input, solve(...input), expected), `optimized disagrees with fixture "${name}"`);
   console.log(`fixture "${name}": ${JSON.stringify(input)} -> ${JSON.stringify(expected)}`);
@@ -84,16 +82,25 @@ function checkFixture(name, input, expected) {
 
 // A boundary fixture whose expected behavior is rejection - out of range or the
 // wrong type entirely - rather than a value. See good-test.md rule 4.
-// eslint-disable-next-line no-unused-vars -- stub; used once test() calls are added below
 function checkThrows(name, input, ErrorType) {
   assert.throws(() => solve(...input), ErrorType, `optimized should reject fixture "${name}"`);
   console.log(`fixture "${name}": ${JSON.stringify(input)} -> throws ${ErrorType.name}`);
 }
 
-// TODO: one test() per locked fixture, e.g.:
-// test('fixture: empty', () => checkFixture('empty', [[], 0], []));
-// test('fixture: single', () => checkFixture('single', [[5], 1], [5]));
-// test('fixture: wrong type', () => checkThrows('k is a string', [[1, 2, 3], '2'], TypeError));
+test('fixture: empty', () => checkFixture('empty', [[]], []));
+test('fixture: single-empty-list', () => checkFixture('single-empty-list', [[[]]], []));
+test('fixture: two-empty-lists', () => checkFixture('two-empty-lists', [[[], []]], []));
+test('fixture: single-list', () => checkFixture('single-list', [[[5]]], [5]));
+test('fixture: one-empty-one-not', () => checkFixture('one-empty-one-not', [[[1, 2, 3], []]], [1, 2, 3]));
+test('fixture: ties', () =>
+  checkFixture('ties', [[[1, 4, 5], [1, 3, 4], [2, 6]]], [1, 1, 2, 3, 4, 4, 5, 6]));
+test('fixture: negatives', () =>
+  checkFixture('negatives', [[[-3, -1, 0], [-2, 2], [1]]], [-3, -2, -1, 0, 1, 2]));
+test('fixture: throws-null', () => checkThrows('throws-null', [null], TypeError));
+test('fixture: throws-string', () => checkThrows('throws-string', ['abc'], TypeError));
+test('fixture: throws-bad-element', () => checkThrows('throws-bad-element', [[[1, 2], 'bad']], TypeError));
+test('fixture: throws-non-integer', () =>
+  checkThrows('throws-non-integer', [[[1, 2], [1.5]]], TypeError));
 
 // ── Random input generator ────────────────────────────────────────────────────
 // fast-check, not a hand-rolled PRNG - it already biases toward edge cases
