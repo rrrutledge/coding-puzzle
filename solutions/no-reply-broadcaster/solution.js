@@ -27,29 +27,22 @@ function validateInput(people, hasMessaged) {
   });
 }
 
-// ── Disqualification: permanent, and counted exactly once ─────────────────────
-// Marks one person as out for good and reports how many live candidates that
-// removed - 1 the first time, 0 when they were already out - so the caller's
-// running count of live candidates stays in step without re-scanning `alive`.
-function kill(alive, idx) {
-  const eliminated = alive[idx] ? 1 : 0;
-  alive[idx] = false;
-
-  return eliminated;
-}
-
 // ── One oracle call, read for both of the two facts it carries ────────────────
 // A call is worth making only while one of its endpoints could still qualify;
 // once both are out it can teach us nothing, so it is skipped. The answer always
-// disqualifies exactly one of the two: a true send means the receiver has
-// received a message, a false send means the sender missed someone. Returns how
-// many live candidates the call eliminated (0 or 1).
+// disqualifies exactly one of the two, for good: a true send means the receiver
+// has received a message, a false send means the sender missed someone. Returns
+// how many live candidates the call eliminated - 1 for a first-time kill, 0 when
+// the target was already out - so the caller's running count stays in step
+// without re-scanning `alive`.
 function askIfUseful(people, hasMessaged, alive, fromIdx, toIdx) {
   let eliminated = 0;
 
   if (alive[fromIdx] || alive[toIdx]) {
     const sent = hasMessaged(people[fromIdx], people[toIdx]);
-    eliminated = kill(alive, sent ? toIdx : fromIdx);
+    const targetIdx = sent ? toIdx : fromIdx;
+    eliminated = alive[targetIdx] ? 1 : 0;
+    alive[targetIdx] = false;
   }
 
   return eliminated;
