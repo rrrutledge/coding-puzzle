@@ -109,3 +109,15 @@ is that evidence being absent, not the presence of some named bad pattern.
     **Check:** every full in-order traversal of a collection is a `for` loop or a functional method, and
     each `while` loop's condition is something other than a running index reaching a fixed length - a
     growing worklist or a converge-until-true test.
+11. **Use a proven implementation of a standard structure or utility rather than re-writing it.** A heap
+    or priority queue, a deep- or unordered-equality check, a disjoint-set, a comparison routine - anything
+    the standard library or a well-known package already ships correct - comes from that source, because a
+    widely-used implementation is trustworthy where a freshly-written one invites subtle bugs the reader now
+    has to re-verify. Re-implement only when a measured optimization needs a representation the library
+    can't expose, or the algorithm must interleave custom work with the structure's internals in one pass
+    (sifting a heap while rewriting the nodes it passes, say), and name that reason in a comment. A custom
+    dimension a library doesn't cover - order-independence in an equivalence check - is written by hand, but
+    the equality underneath it still delegates to the built-in.
+    **Check:** each standard structure or utility the solution leans on comes from the standard library or a
+    named dependency; any hand-written version sits under a comment naming the optimization or the
+    interleaved custom work a library form could not have provided.

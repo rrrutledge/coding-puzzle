@@ -43,22 +43,17 @@ function equivalent(input, a, b) {
 }
 
 function deepEqualUnordered(a, b) {
+  // The only hand-written part is order-independence, which no standard routine
+  // provides: sort arrays into a canonical order first. The element-by-element
+  // comparison underneath still delegates to the built-in deep-equal (good-code
+  // rule 11) rather than a hand-rolled `.every()`.
+  const canonical = (x) => (Array.isArray(x) ? [...x].map(String).sort() : x);
   let equal;
-  if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length) {
-      equal = false;
-    } else {
-      const sa = [...a].map(String).sort();
-      const sb = [...b].map(String).sort();
-      equal = sa.every((v, i) => v === sb[i]);
-    }
-  } else {
-    try {
-      assert.deepEqual(a, b);
-      equal = true;
-    } catch {
-      equal = false;
-    }
+  try {
+    assert.deepEqual(canonical(a), canonical(b));
+    equal = true;
+  } catch {
+    equal = false;
   }
   return equal;
 }
