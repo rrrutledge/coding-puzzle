@@ -27,72 +27,59 @@ function validateInput(people, hasMessaged) {
   });
 }
 
-// ── One oracle call, read for both of the two facts it carries ────────────────
-// A call is worth making only while one of its endpoints could still qualify;
-// once both are out it can teach us nothing, so it is skipped. The answer always
-// disqualifies exactly one of the two, for good: a true send means the receiver
-// has received a message, a false send means the sender missed someone. Returns
-// how many live candidates the call eliminated - 1 for a first-time kill, 0 when
-// the target was already out - so the caller's running count stays in step
-// without re-scanning `alive`.
-function askIfUseful(people, hasMessaged, alive, fromIdx, toIdx) {
-  let eliminated = 0;
-
-  if (alive[fromIdx] || alive[toIdx]) {
-    const sent = hasMessaged(people[fromIdx], people[toIdx]);
-    const targetIdx = sent ? toIdx : fromIdx;
-    eliminated = alive[targetIdx] ? 1 : 0;
-    alive[targetIdx] = false;
-  }
-
-  return eliminated;
-}
-
 // ── Optimized solution: the shipped artifact ──────────────────────────────────
 /**
  * Finds everyone who has sent a message to every one of the other N-1 people and
  * has never received a message from any of them. `people` is neither mutated nor
- * assumed sorted; ids come back in ascending order (at most one can qualify for
- * N >= 2, but each person is judged independently on their own evidence).
+ * copied. At most one person can qualify for N >= 2 (whoever qualifies has messaged
+ * every other person, so everyone else has received something), so the answer is an
+ * array of at most one id - already in ascending order, no sort needed.
  * @param {number[]} people - distinct positive integer person ids
  * @param {(a: number, b: number) => boolean} hasMessaged - oracle: true iff a sent b a message
- * @returns {number[]} the qualifying ids, ascending; [] when nobody qualifies (including N < 2)
+ * @returns {number[]} the qualifying id in a one-element array, or [] when nobody qualifies (including N < 2)
  * @throws {TypeError} if people is not an array, hasMessaged is not a function, or an id is not an integer
  * @throws {RangeError} if an id is not positive
- * Time: O(N^2)   Space: O(N)
- * Each ordered pair (i, j) is asked at most once, so at most N*(N-1) oracle calls -
- * half the 2*N*(N-1) a per-candidate check costs, since that re-asks each pair from
- * both sides. Auxiliary space is the one live/dead flag per person.
+ * Time: O(N)   Space: O(1)
+ * At most 3*(N-1) oracle calls: (N-1) to eliminate down to one candidate, then up to
+ * 2*(N-1) to confirm that candidate in both directions. Auxiliary space is two scalars
+ * - the running candidate's index and one flag.
  */
 function solve(people, hasMessaged) {
   // Reject malformed input before spending a single oracle call.
   validateInput(people, hasMessaged);
 
-  // Everyone starts a live candidate and dies on the first disqualifying answer.
-  // Nobody qualifies without someone else to message, so N=0 and N=1 start with
-  // no live candidates at all - a lone person does not qualify vacuously - which
-  // makes the sweep below a no-op and the answer [].
-  const MIN_PEOPLE = 2; // one person to message and one to hear back from
   const n = people.length;
-  const alive = new Array(n).fill(n >= MIN_PEOPLE);
-  let aliveCount = n >= MIN_PEOPLE ? n : 0;
 
-  // Visit each unordered pair once and ask it in both directions, letting every
-  // answer eliminate whichever endpoint it disqualifies. An explicit loop, not a
-  // functional pass: it carries mutable state across the pairs and stops early.
-  // Both headers carry `aliveCount > 0`, so the sweep ends the moment no live
-  // candidate remains - a dead person never revives, so nothing later can matter.
-  for (let i = 0; i < n - 1 && aliveCount > 0; i += 1) {
-    for (let j = i + 1; j < n && aliveCount > 0; j += 1) {
-      aliveCount -= askIfUseful(people, hasMessaged, alive, i, j);
-      aliveCount -= askIfUseful(people, hasMessaged, alive, j, i);
+  // Elimination: one call per person, and whichever way it answers exactly one of
+  // the two is out for good - a true send means the receiver has received a
+  // message, a false send means the sender missed someone. So the running
+  // candidate is always the only person seen so far who could still qualify, and
+  // nobody is ever eliminated without an observed fact that disqualifies them.
+  // An explicit loop, not a functional pass: it carries the candidate across
+  // iterations, and it runs to completion because every person must be consumed.
+  let candidateIdx = 0;
+  for (let i = 1; i < n; i += 1) {
+    if (!hasMessaged(people[candidateIdx], people[i])) {
+      candidateIdx = i;
     }
   }
 
-  // A survivor was never skipped over (a pair with a live endpoint is always
-  // asked), so it messaged everyone and heard back from no one. `filter` builds a
-  // fresh array, so sorting it leaves the caller's `people` untouched.
-  const qualifiers = people.filter((_, idx) => alive[idx]).sort((a, b) => a - b);
+  // Verification: the survivor is only a candidate - the calls above were made
+  // against earlier candidates, and no incoming direction was ever asked - so
+  // confirm it against everyone else, both directions. `verified` starts false
+  // below the minimum roster size, which is what makes N=0 and N=1 answer []
+  // rather than passing vacuously with nobody to check against.
+  const MIN_PEOPLE = 2; // someone to message, and someone who could have replied
+  let verified = n >= MIN_PEOPLE;
+  for (let i = 0; i < n && verified; i += 1) {
+    if (i !== candidateIdx) {
+      verified =
+        hasMessaged(people[candidateIdx], people[i]) === true && hasMessaged(people[i], people[candidateIdx]) === false;
+    }
+  }
+
+  // A confirmed candidate is the one and only answer; anything else means nobody qualifies.
+  const qualifiers = verified ? [people[candidateIdx]] : [];
 
   return qualifiers;
 }
