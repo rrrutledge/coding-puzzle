@@ -64,6 +64,20 @@ function buildHasMessaged(edges) {
   return (a, b) => sent.has(`${a},${b}`);
 }
 
+// ── Counting oracle: measures real invocations solve makes ────────────────────
+// The puzzle's cost metric is real oracle calls, and solve memoizes internally,
+// so passing it an oracle wrapped in this counter reports exactly the cache-miss
+// count - the real work - not solve's logical query count. Test-only, used to
+// prove the memoized call bound holds.
+function countingOracle(fn) {
+  const counter = { calls: 0 };
+  const oracle = (a, b) => {
+    counter.calls += 1;
+    return fn(a, b);
+  };
+  return { oracle, counter };
+}
+
 // ── Hardcoded fixtures: locked after the sample-cases gate ────────────────────
 // Each expected value is worked out by hand from the statement, never copied from
 // a solution's output. Span the clarified boundaries: empty, single, dupes, ties,
@@ -134,6 +148,48 @@ test('fixture: near-miss (one inbound)', () => {
 
 test('fixture: invalid type in people', () => {
   checkThrows('invalid type in people', [[1, '2', 3], () => false], TypeError, []);
+});
+
+// ── Real-call-count fixtures: prove the memoized bound ────────────────────────
+// The internal memoization is only worth its O(N) space if it actually reclaims
+// re-asked pairs, so these assert the real (cache-miss) call count solve makes,
+// not just its answer. The naive, un-memoized cost is 3*(N-1): N-1 to eliminate
+// plus 2*(N-1) to verify. Memoization drives that down to at most 3N-4 (worst
+// case, survivor promoted on the last step) and 2N-2 (best case, survivor is the
+// never-replaced initial candidate, so its whole outgoing direction is free).
+test('real calls: initial-candidate best case hits only 2N-2', () => {
+  const people = [1, 2, 3];
+  const edges = [
+    [1, 2],
+    [1, 3],
+    [2, 3],
+  ];
+  const { oracle, counter } = countingOracle(buildHasMessaged(edges));
+  assert.deepEqual(solve(people, oracle), [1]);
+  const n = people.length;
+  assert.equal(counter.calls, 2 * n - 2, `expected 2N-2=${2 * n - 2} real calls, got ${counter.calls}`);
+  console.log(`real calls: initial-candidate N=${n} -> ${counter.calls} (naive would be ${3 * (n - 1)})`);
+});
+
+test('real calls: last-step promotion stays within 3N-4', () => {
+  // 4 people. Elimination replaces the candidate on the final step, so only the
+  // promoting incoming check for the survivor is cached before verification.
+  // survivor = person 4: it messages everyone (full outgoing) and nobody messages
+  // it (empty incoming); the earlier three each miss someone so they eliminate in
+  // turn, handing the candidacy to 4 only on the last comparison.
+  const people = [1, 2, 3, 4];
+  const edges = [
+    [4, 1],
+    [4, 2],
+    [4, 3],
+    [1, 2],
+    [2, 3],
+  ];
+  const { oracle, counter } = countingOracle(buildHasMessaged(edges));
+  assert.deepEqual(solve(people, oracle), [4]);
+  const n = people.length;
+  assert.ok(counter.calls <= 3 * n - 4, `expected <= 3N-4=${3 * n - 4} real calls, got ${counter.calls}`);
+  console.log(`real calls: last-step-promotion N=${n} -> ${counter.calls} (naive would be ${3 * (n - 1)})`);
 });
 
 // ── Random input generator ────────────────────────────────────────────────────
@@ -225,22 +281,38 @@ const inputArbitrary = fc
   });
 
 // ── Cross-validation: the load-bearing check ──────────────────────────────────
-test('cross-check: optimized matches brute on random inputs', () => {
+// Beyond the answer, each run also counts the real oracle calls solve makes (via
+// a counting oracle wrapping the same graph) and asserts the memoized bound: at
+// most 3*(N-1) for any N - never worse than the un-memoized cost - and at most
+// 3N-4 for N >= 2, proving the cache reclaims at least one re-asked pair on every
+// roster with someone to verify.
+test('cross-check: optimized matches brute and stays within the memoized call bound', () => {
   const NUM_RUNS = 300;
   fc.assert(
     fc.property(inputArbitrary, ({ input, edges }) => {
-      const got = solve(...input);
-      const want = bruteSolve(...input);
+      const [people, hasMessaged] = input;
+      const { oracle, counter } = countingOracle(hasMessaged);
+      const got = solve(people, oracle);
+      const want = bruteSolve(people, hasMessaged);
       assert.ok(
         equivalent(input, got, want),
         `mismatch\n` +
-          `  people:    ${JSON.stringify(input[0])}\n` +
+          `  people:    ${JSON.stringify(people)}\n` +
           `  edges:     ${JSON.stringify(edges)}\n` +
           `  optimized: ${JSON.stringify(got)}\n` +
           `  brute:     ${JSON.stringify(want)}`,
       );
+      const n = people.length;
+      const MIN_PEOPLE = 2;
+      const naiveBound = 3 * Math.max(n - 1, 0); // un-memoized worst case: N-1 eliminate + 2(N-1) verify
+      const memoBound = n >= MIN_PEOPLE ? 3 * n - 4 : 0; // memoization reclaims >= 1 re-asked pair
+      assert.ok(
+        counter.calls <= naiveBound && counter.calls <= memoBound,
+        `call-count out of bound: N=${n}, real calls=${counter.calls}, naive<=${naiveBound}, memo<=${memoBound}\n` +
+          `  people: ${JSON.stringify(people)}\n  edges:  ${JSON.stringify(edges)}`,
+      );
     }),
     { numRuns: NUM_RUNS, seed: 1 },
   );
-  console.log(`cross-check: ${NUM_RUNS} fast-check runs (seed 1), 0 mismatches`);
+  console.log(`cross-check: ${NUM_RUNS} fast-check runs (seed 1), 0 mismatches, all within memoized call bound`);
 });
